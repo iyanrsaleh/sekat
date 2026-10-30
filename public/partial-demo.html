@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Partials — Sekat</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <main>
+    <header partial="./header.html"></header>
+    <h1>Partials</h1>
+    <p>Elemen dengan atribut <code>partial="./header.html"</code> di-inject isi file <code>public/header.html</code> oleh server saat halaman dikirim (bukan fetch di browser).</p>
+    <p>Mendukung partial bertingkat (maks 5 level) dan path relatif di dalam folder web.</p>
+    <footer partial="./footer.html"></footer>
+  </main>
+</body>
+</html>

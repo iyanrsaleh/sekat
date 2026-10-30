@@ -1,0 +1,19 @@
+# Runtime storage (diisi aplikasi saat berjalan)
+vendor/storage/logs/
+vendor/storage/mail/
+vendor/storage/cache/
+vendor/storage/uploads/
+
+# Environment & secrets
+.env
+.env.*
+
+# Composer dependencies
+deps/*
+!deps/.htaccess
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

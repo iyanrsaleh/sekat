@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Sekat</title>
+    <link rel="stylesheet" href="assets/css/style.css?v=2">
+    <script src="https://accounts.google.com/gsi/client" async></script>
+</head>
+<body>
+  <main>
+    <h1>Sign In</h1>
+    <p>Masuk untuk mendapatkan token Bearer dari <code>api/auth/login</code>.</p>
+
+    <form id="signin-form" autocomplete="on">
+      <label>
+        Email
+        <input name="email" type="email" required value="admin@example.com">
+      </label>
+
+      <label>
+        Password
+        <input name="password" type="password" required value="admin123">
+      </label>
+
+      <div class="actions">
+        <button type="submit">Masuk</button>
+        <button type="button" id="logout-button" hidden>Logout</button>
+      </div>
+    </form>
+
+    <div id="g_id_onload"
+         data-client_id="__GOOGLE_CLIENT_ID__"
+         data-callback="handleGoogleSignIn"
+         data-auto_prompt="false"
+         data-ux_mode="popup"
+         data-itp_support="true"></div>
+    <div class="g_id_signin"
+         data-type="standard"
+         data-size="medium"
+         data-theme="outline"
+         data-text="signin_with"
+         data-shape="rectangular"
+         data-logo_alignment="left"></div>
+
+    <p id="message" role="status"></p>
+    <pre id="output" hidden></pre>
+
+    <p>Belum punya akun? <a href="signup">Sign Up</a></p>
+    <p><a href="forgot">Lupa password?</a></p>
+    <p><a href="./">Kembali ke halaman utama</a></p>
+  </main>
+
+  <script src="assets/js/signin.js?v=2"></script>
+  <script src="assets/js/google.js?v=4"></script>
+</body>
+</html>

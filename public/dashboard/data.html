@@ -1,0 +1,29 @@
+<header partial="header.html"></header>
+
+
+    <div class="d-sm-flex align-items-center justify-content-between mg-b-20 mg-lg-b-25 mg-xl-b-30">
+      <div>
+        <h4 class="mg-b-0 tx-spacing--1">Data</h4>
+      </div>
+    </div>
+
+    <div class="row row-xs">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">
+            <h6 class="mg-b-0">Example page</h6>
+          </div>
+          <div class="card-body">
+            <p>Example dashboard page: <code>public/dashboard/data.html</code>.</p>
+            <p>Segments after <code>dashboard/data</code> are parameters (not files). Example <code>/dashboard/data/a1</code> &rarr; page <code>data</code>, parameter <code>a1</code>.</p>
+            <p class="mg-b-0">Current parameter: <strong id="param"></strong></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+<script>
+  document.getElementById('param').textContent = (location.pathname.split('/').filter(Boolean).slice(2).join('/')) || '(empty)';
+</script>
+<footer partial="footer.html"></footer>

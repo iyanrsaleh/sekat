@@ -1,0 +1,43 @@
+Options -Indexes
+
+# ---- Blokir backend, dependensi, dan berkas sensitif (defense-in-depth) ----
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Backend & dependensi: 403 walau .htaccess di subfolder tidak terbaca
+    RewriteRule ^(vendor|deps|build)(/.*)?$ - [F,L]
+
+    # Berkas sensitif & dotfiles: 403
+    RewriteRule ^(\.(git|env|htpasswd).*|composer\.(json|lock)|README\.md)$ - [F,L]
+    RewriteCond %{REQUEST_URI} \.(sql|log|pem|key|p12|bak|old|bat|sh|cmd|ini|yml|yaml)$ [NC]
+    RewriteRule ^ - [F,L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(html|css|js)$">
+        Header set Cache-Control "no-cache, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    CGIPassAuth On
+
+    # Apache membuang Authorization saat rewrite ke index.php.
+    RewriteCond %{HTTP:Authorization} ^(.*)$
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
+    # Asset dashboard: /dashboard/assets/... -> public/dashboard/assets/...
+    RewriteRule ^dashboard/assets/(.*)$ public/dashboard/assets/$1 [L]
+
+    # Asset frontend: /assets/... -> public/assets/...
+    RewriteRule ^assets/(.*)$ public/assets/$1 [L]
+
+    # File/folder yang benar-benar ada dilayani apa adanya
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Sisanya masuk ke satu pintu: index.php
+    RewriteRule ^ index.php [L,QSA]
+</IfModule>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lupa Password — Sekat</title>
+  <link rel="stylesheet" href="assets/css/style.css?v=2">
+</head>
+<body>
+  <main>
+    <h1>Lupa password</h1>
+    <p>Masukkan email akun. Tautan ganti password dikirim ke email itu.</p>
+
+    <form id="forgot-form" autocomplete="on">
+      <label>
+        Email
+        <input name="email" type="email" required>
+      </label>
+      <div class="actions">
+        <button type="submit">Kirim tautan</button>
+      </div>
+    </form>
+
+    <p id="message" role="status"></p>
+
+    <p><a href="signin">Kembali ke Sign In</a></p>
+  </main>
+
+  <script src="assets/js/forgot.js?v=1"></script>
+</body>
+</html>

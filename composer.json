@@ -1,0 +1,17 @@
+{
+    "name": "framework/backend",
+    "description": "Backend API PHP untuk framework pribadi",
+    "type": "project",
+    "require": {
+        "php": ">=8.1"
+    },
+    "config": {
+        "vendor-dir": "deps",
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "vendor/src/"
+        }
+    }
+}

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <meta name="description" content="Admin panel">
+    <meta name="author" content="Sekat">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.png">
+
+    <title>Admin Panel</title>
+
+    <!-- vendor css -->
+
+    <!-- DashForge CSS -->
+    <link rel="stylesheet" href="assets/css/dashforge.css">
+    <link rel="stylesheet" href="assets/css/dashforge.dashboard.css">
+
+    <script src="assets/js/session.js?v=2"></script>
+    <script src="assets/js/header.js" defer></script>
+  </head>
+  <body>
+
+    <aside class="aside aside-fixed">
+      <script>
+        try {
+          if (localStorage.getItem('framework_aside_minimize') === '1' && window.matchMedia('(min-width: 992px)').matches) {
+            document.currentScript.parentElement.classList.add('minimize');
+          }
+        } catch (error) {}
+      </script>
+      <div class="aside-header">
+        <a href="./" class="aside-logo">admin<span>Panel</span></a>
+        <a href="" class="aside-menu-link">
+          <i data-feather="menu"></i>
+          <i data-feather="x"></i>
+        </a>
+      </div>
+      <div class="aside-body">
+        <div class="aside-loggedin">
+          <div class="d-flex align-items-center justify-content-start">
+            <a href="#" id="avatar-trigger" class="avatar" title="Click to change photo">
+              <img id="avatar-img" src="" class="rounded-circle" alt="Profile photo">
+            </a>
+            <input type="file" id="avatar-input" accept="image/png,image/jpeg,image/webp" hidden>
+            <div class="aside-alert-link">
+              <a href="#" data-logout title="Sign out"><i data-feather="log-out"></i></a>
+            </div>
+          </div>
+          <div class="aside-loggedin-user">
+            <h6 id="account-name" class="tx-semibold mg-b-1">Loading…</h6>
+            <p id="account-email" class="tx-color-03 tx-12 mg-b-0">—</p>
+            <p id="avatar-message" class="tx-11 tx-color-03 mg-b-0" role="status"></p>
+          </div>
+        </div><!-- aside-loggedin -->
+
+        <ul class="nav nav-aside">
+          <li class="nav-label">Account</li>
+          <li class="nav-item"><a href="./" class="nav-link"><i data-feather="grid"></i> <span>Dashboard</span></a></li>
+          <li class="nav-item"><a href="settings" class="nav-link"><i data-feather="sliders"></i> <span>Settings</span></a></li>
+          <li class="nav-item"><a href="../" class="nav-link"><i data-feather="external-link"></i> <span>Public Site</span></a></li>
+
+          <li class="nav-label mg-t-25">Logout</li>
+          <li class="nav-item">
+            <a href="#" data-logout class="nav-link"><i data-feather="log-out"></i> <span>Sign Out</span></a>
+          </li>
+
+          <li class="nav-label mg-t-25">Contoh</li>
+          <li class="nav-item"><a href="data" class="nav-link"><i data-feather="database"></i> <span>Data</span></a></li>
+          <li class="nav-item"><a href="uploads" class="nav-link"><i data-feather="upload"></i> <span>Upload</span></a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <div class="content ht-100v pd-0">
+      <div class="content-header">
+        <div class="content-search">
+          <i data-feather="search"></i>
+          <input type="search" class="form-control" placeholder="Search...">
+        </div>
+        <nav class="nav">
+          <a href="" class="nav-link"><i data-feather="help-circle"></i></a>
+          <a href="" class="nav-link"><i data-feather="grid"></i></a>
+          <a href="" class="nav-link"><i data-feather="align-left"></i></a>
+        </nav>
+      </div><!-- content-header -->
+  <div class="content-body">

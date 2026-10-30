@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: framework
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_NAME: framework
+      DB_USER: root
+      DB_PASS: root
+      APP_ENV: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql, mbstring
+          coverage: none
+
+      - name: Lint PHP
+        run: find . -name '*.php' -not -path './deps/*' -print0 | xargs -0 -n1 php -l
+
+      - name: Migrate
+        run: php vendor/bin/migrate.php
+
+      - name: Seed
+        run: php vendor/bin/seed.php
+
+      - name: Start server
+        run: php -S 127.0.0.1:8123 -t . vendor/bin/router.php > server.log 2>&1 &
+
+      - name: Integration test
+        run: |
+          sleep 2
+          TEST_BASE=http://127.0.0.1:8123 php vendor/bin/test.php
+
+      - name: Upload server log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-log
+          path: server.log

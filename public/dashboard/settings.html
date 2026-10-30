@@ -1,0 +1,150 @@
+<header partial="header.html"></header>
+
+
+    <div class="d-sm-flex align-items-center justify-content-between mg-b-20 mg-lg-b-25 mg-xl-b-30">
+      <div>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb breadcrumb-style1 mg-b-10">
+            <li class="breadcrumb-item"><a href="index">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Settings</li>
+          </ol>
+        </nav>
+        <h4 class="mg-b-0 tx-spacing--1">Settings</h4>
+      </div>
+    </div>
+
+    <div class="row row-xs">
+
+      <!-- Left: forms -->
+      <div class="col-lg-8">
+
+        <div class="card">
+          <div class="card-header pd-y-15 pd-x-20">
+            <h6 class="mg-b-0">Account Info</h6>
+          </div>
+          <div class="card-body pd-20 pd-lg-25">
+            <form id="account-form">
+              <div class="row row-xs">
+                <div class="col-sm-6">
+                  <div class="form-group mg-b-0">
+                    <label for="name">Name</label>
+                    <input id="name" name="name" class="form-control" maxlength="120">
+                  </div>
+                </div>
+                <div class="col-sm-6 mg-t-15 mg-sm-t-0">
+                  <div class="form-group mg-b-0">
+                    <label for="email">Email</label>
+                    <input id="email" name="email" type="email" class="form-control" maxlength="190" readonly>
+                    <small class="form-text tx-color-03">Email cannot be changed.</small>
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary mg-t-20">Save Profile</button>
+              <p id="account-message" class="mg-t-15 mg-b-0 tx-13" role="status"></p>
+            </form>
+          </div>
+          <div class="card-footer bg-transparent pd-y-15 pd-x-20 d-flex justify-content-between align-items-center">
+            <span class="tx-13 tx-color-03">Sign out of all login sessions.</span>
+            <button type="button" id="logout-all" class="btn btn-outline-danger btn-sm">Sign out all devices</button>
+          </div>
+        </div>
+
+        <div class="card mg-t-20" id="password-card">
+          <div class="card-header pd-y-15 pd-x-20">
+            <h6 class="mg-b-0">Change Password</h6>
+          </div>
+          <div class="card-body pd-20 pd-lg-25">
+            <form id="password-form">
+              <div class="form-group">
+                <label for="current_password">Current password</label>
+                <input id="current_password" name="current_password" type="password" class="form-control" autocomplete="current-password">
+              </div>
+              <div class="row row-xs">
+                <div class="col-sm-6">
+                  <div class="form-group mg-b-0">
+                    <label for="new_password">New password</label>
+                    <input id="new_password" name="new_password" type="password" class="form-control" minlength="8" autocomplete="new-password">
+                  </div>
+                </div>
+                <div class="col-sm-6 mg-t-15 mg-sm-t-0">
+                  <div class="form-group mg-b-0">
+                    <label for="confirm_password">Repeat new password</label>
+                    <input id="confirm_password" name="confirm_password" type="password" class="form-control" minlength="8" autocomplete="new-password">
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary mg-t-20">Change Password</button>
+              <p id="password-message" class="mg-t-15 mg-b-0 tx-13" role="status"></p>
+            </form>
+          </div>
+        </div>
+
+        <div class="card mg-t-20 d-none" id="google-account">
+          <div class="card-header pd-y-15 pd-x-20">
+            <h6 class="mg-b-0">Google account</h6>
+          </div>
+          <div class="card-body pd-20 pd-lg-25">
+            <p class="tx-13 tx-color-03 mg-b-0">This account signs in with Google. A password is not used here.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right: summary & links -->
+      <div class="col-lg-4 mg-t-20 mg-lg-t-0">
+
+        <div class="card">
+          <div class="card-header pd-y-15 pd-x-20">
+            <h6 class="mg-b-0">Summary</h6>
+          </div>
+          <div class="card-body pd-0">
+            <ul class="list-group list-group-flush tx-13">
+              <li class="list-group-item d-flex justify-content-between align-items-center pd-x-20">
+                <span class="tx-color-03">Sign-in</span>
+                <span class="badge badge-secondary" id="sum-provider">—</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center pd-x-20">
+                <span class="tx-color-03">Role</span>
+                <span class="badge badge-primary" id="sum-role">—</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center pd-x-20">
+                <span class="tx-color-03">Profile photo</span>
+                <span class="tx-medium" id="sum-avatar">—</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center pd-x-20">
+                <span class="tx-color-03">Application</span>
+                <span class="tx-medium" id="sum-app">—</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card mg-t-20">
+          <div class="card-header pd-y-15 pd-x-20">
+            <h6 class="mg-b-0">Quick Links</h6>
+          </div>
+          <div class="card-body pd-0">
+            <ul class="list-group list-group-flush tx-13">
+              <li class="list-group-item pd-x-20"><a href="index" class="link-03 d-flex align-items-center"><i data-feather="grid" class="wd-14 mg-r-10"></i> Dashboard</a></li>
+              <li class="list-group-item pd-x-20"><a href="data" class="link-03 d-flex align-items-center"><i data-feather="database" class="wd-14 mg-r-10"></i> Data</a></li>
+              <li class="list-group-item pd-x-20"><a href="uploads" class="link-03 d-flex align-items-center"><i data-feather="upload" class="wd-14 mg-r-10"></i> Upload</a></li>
+              <li class="list-group-item pd-x-20"><a href="../" class="link-03 d-flex align-items-center"><i data-feather="external-link" class="wd-14 mg-r-10"></i> Public Site</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card mg-t-20">
+          <div class="card-body">
+            <h6 class="mg-b-10">Tips</h6>
+            <p class="tx-13 tx-color-03 mg-b-0">Click the profile photo in the left sidebar to change it. Site title changes apply to every page title.</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+<script src="assets/js/settings.js"></script>
+<footer partial="footer.html"></footer>

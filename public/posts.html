@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Post — Contoh CRUD</title>
+  <link rel="stylesheet" href="assets/css/style.css?v=2">
+</head>
+<body>
+  <main>
+    <h1>Post</h1>
+    <p>Contoh frontend yang memanggil API <code>api/posts</code>. Menambah, mengubah, dan menghapus butuh login admin (<a href="signin">Sign In</a>).</p>
+
+    <form id="post-form" autocomplete="off">
+      <label>
+        Judul
+        <input name="title" maxlength="200" required>
+      </label>
+
+      <label>
+        Isi
+        <textarea name="body" rows="4" required></textarea>
+      </label>
+
+      <div class="actions">
+        <button type="submit" id="submit-button">Tambah</button>
+        <button type="button" id="cancel-button" hidden>Batal</button>
+      </div>
+    </form>
+
+    <p id="message" role="status"></p>
+
+    <ul id="post-list"></ul>
+  </main>
+
+  <script src="assets/js/posts.js?v=2"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proxy — Contoh</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <main>
+    <h1>Proxy</h1>
+    <p>Contoh memakai proxy ke <code>https://jsonplaceholder.typicode.com</code> lewat <code>/api/jsonplaceholder/{path}</code>.</p>
+
+    <label>
+      Path tujuan
+      <input id="path" value="/posts/1" placeholder="/posts">
+    </label>
+
+    <div class="actions">
+      <button type="button" data-path="/posts">posts</button>
+      <button type="button" data-path="/posts/1">posts/1</button>
+      <button type="button" data-path="/users">users</button>
+      <button type="button" data-path="/todos?userId=1">todos?userId=1</button>
+      <button type="button" id="fetch-button">Ambil</button>
+    </div>
+
+    <p id="message" role="status"></p>
+    <pre id="output"></pre>
+
+    <p><a href="./">Beranda</a></p>
+  </main>
+
+  <script src="assets/js/proxy.js"></script>
+</body>
+</html>
