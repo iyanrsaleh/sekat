@@ -99,10 +99,24 @@ framework/
 
 ## 3. Menjalankan
 
-Pemasang `sekat` (C++, folder `cli/`) memasang perintah ke komputer dan mengunduh kerangka ke folder proyek:
+Pemasang `sekat` (C++, folder `cli/`) memasang perintah ke komputer dan mengunduh kerangka ke folder proyek.
+
+Unduh dan pasang perintah `sekat` (buka terminal baru setelahnya) — Windows:
+
+```powershell
+powershell -ExecutionPolicy Bypass -Command "irm https://github.com/iyanrsaleh/sekat/releases/latest/download/install.ps1 | iex"
+```
+
+Linux:
+
+```sh
+curl -fsSL https://github.com/iyanrsaleh/sekat/releases/latest/download/install.sh | sh
+```
+
+Setelah `sekat` tersedia, buat proyek:
 
 ```text
-sekat install --global
+sekat install --global   # hanya bila biner diunduh manual, bukan lewat skrip di atas
 cd D:\path\ke\proyek
 sekat install
 sekat db
