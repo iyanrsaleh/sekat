@@ -99,6 +99,19 @@ framework/
 
 ## 3. Menjalankan
 
+Pemasang `sekat` (C++, folder `cli/`) memasang perintah ke komputer dan mengunduh kerangka ke folder proyek:
+
+```text
+sekat install --global
+cd D:\path\ke\proyek
+sekat install
+sekat db
+sekat migrate
+sekat serve
+```
+
+Kata sandi basis data dibaca dari `.env` (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`).
+
 Apache Nxserver: `localhost`, `DocumentRoot = C:\Nxserver\www`, `AllowOverride All` (diaktifkan).
 
 `.htaccess` di root project mengarahkan semua URL yang bukan file/folder fisik ke `index.php`:

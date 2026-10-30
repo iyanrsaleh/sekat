@@ -13,6 +13,6 @@ return [
     'port' => (int) $env('DB_PORT', '3310'),
     'database' => $env('DB_NAME', 'framework'),
     'username' => $env('DB_USER', 'root'),
-    'password' => 'mysql',
+    'password' => $env('DB_PASS', ''),
     'charset' => 'utf8mb4',
 ];

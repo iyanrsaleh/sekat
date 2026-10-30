@@ -17,3 +17,7 @@ deps/*
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Sumber program pemasang C++ (proprietary, tidak disertakan)
+cli/src/
+cli/CMakeLists.txt
