@@ -21,3 +21,6 @@ Thumbs.db
 # Sumber program pemasang C++ (proprietary, tidak disertakan)
 cli/src/
 cli/CMakeLists.txt
+
+# Catatan pribadi
+PLAN.md
