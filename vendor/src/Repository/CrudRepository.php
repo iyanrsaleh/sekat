@@ -49,6 +49,7 @@ final class CrudRepository
         string $sort = 'id',
         string $order = 'desc',
         array $with = [],
+        bool $publishedOnly = false,
     ): array {
         $model = $this->model;
         $table = $model::table();
@@ -60,7 +61,7 @@ final class CrudRepository
         $sort = in_array($sort, [...$model::fieldNames(), 'id', 'created_at', 'updated_at'], true) ? $sort : 'id';
         $order = strtolower($order) === 'asc' ? 'ASC' : 'DESC';
 
-        [$where, $params] = $this->where($filters);
+        [$where, $params] = $this->where($filters, $publishedOnly);
 
         $totalRow = $this->database->first(
             sprintf('SELECT COUNT(*) AS total FROM `%s`%s', $table, $where),
@@ -103,6 +104,38 @@ final class CrudRepository
 
         if ($model::softDeletes() && !$withDeleted) {
             $sql .= ' AND deleted_at IS NULL';
+        }
+
+        $row = $this->database->first($sql, ['id' => $id]);
+
+        return $row === null ? null : $this->attach($model::serialize($row), $with);
+    }
+
+    /**
+     * Baris yang boleh dibaca orang luar: status published dan sudah mencapai tanggal tayang.
+     *
+     * @param array<int, string> $with
+     * @return array<string, mixed>|null
+     */
+    public function findPublished(int $id, array $with = []): ?array
+    {
+        $model = $this->model;
+
+        if (!in_array('status', $model::fieldNames(), true)) {
+            return $this->find($id, $with);
+        }
+
+        $sql = sprintf(
+            "SELECT * FROM `%s` WHERE id = :id AND status = 'published'",
+            $model::table(),
+        );
+
+        if ($model::softDeletes()) {
+            $sql .= ' AND deleted_at IS NULL';
+        }
+
+        if (in_array('published_at', $model::fieldNames(), true)) {
+            $sql .= ' AND (published_at IS NULL OR published_at <= NOW())';
         }
 
         $row = $this->database->first($sql, ['id' => $id]);
@@ -264,11 +297,24 @@ final class CrudRepository
      * @param array<string, string> $filters
      * @return array{0: string, 1: array<string, mixed>}
      */
-    private function where(array $filters): array
+    /**
+     * @param array<string, string> $filters
+     * @return array{0: string, 1: array<string, mixed>}
+     */
+    private function where(array $filters, bool $publishedOnly = false): array
     {
         $model = $this->model;
         $clauses = [];
         $params = [];
+
+        if ($publishedOnly && in_array('status', $model::fieldNames(), true)) {
+            unset($filters['status']);
+            $clauses[] = "`status` = 'published'";
+
+            if (in_array('published_at', $model::fieldNames(), true)) {
+                $clauses[] = '(published_at IS NULL OR published_at <= NOW())';
+            }
+        }
 
         foreach ($filters as $field => $value) {
             if (!in_array($field, $model::fieldNames(), true) || $value === '') {
@@ -502,11 +548,13 @@ final class CrudRepository
 
     private function slugReserved(string $slug): bool
     {
-        if (in_array($slug, ['api', 'assets', 'dashboard', 'vendor', 'deps'], true)) {
+        if (in_array($slug, ['api', 'assets', 'dashboard', 'vendor', 'deps', 'theme'], true)) {
             return true;
         }
 
-        return is_file(dirname(__DIR__, 3) . '/public/' . $slug . '.html');
+        $root = dirname(__DIR__, 3) . '/public';
+
+        return is_file($root . '/theme/' . $slug . '.html') || is_file($root . '/' . $slug . '.html');
     }
 
     private function assertUnique(string $field, mixed $value, ?int $id, string $label): void

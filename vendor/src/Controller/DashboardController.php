@@ -57,10 +57,21 @@ final class DashboardController
         $found = HtmlPages::locate(self::dashboardDir(), $urlPath === '' ? 'index' : $urlPath);
 
         if ($found === null) {
-            return Response::html($this->prepare((string) file_get_contents(self::publicDir() . '/404.html')));
+            return $this->missing();
         }
 
         return Response::html($this->prepare((string) file_get_contents($found['file']), $found['directory']));
+    }
+
+    private function missing(): Response
+    {
+        $file = self::dashboardDir() . '/404.html';
+
+        if (!is_file($file)) {
+            return Response::error('PAGE_NOT_FOUND', 'Halaman tidak ditemukan', 404);
+        }
+
+        return Response::html($this->prepare((string) file_get_contents($file)), 404);
     }
 
     private function prepare(string $html, string $directory = ''): string

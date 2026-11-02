@@ -317,15 +317,13 @@ final class AuthController
         $refresh = $this->tokens->issue($userId, 'refresh', 90);
 
         if ($this->cookieRefresh) {
-            setcookie(
-                'refresh_token',
-                $refresh['token'],
-                (new \DateTimeImmutable('+90 days'))->getTimestamp(),
-                '/',
-                '',
-                false,
-                true,
-            );
+            setcookie('refresh_token', $refresh['token'], [
+                'expires' => (new \DateTimeImmutable('+90 days'))->getTimestamp(),
+                'path' => '/',
+                'secure' => Request::https(),
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
         }
 
         return [

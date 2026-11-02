@@ -187,15 +187,44 @@ final class Request
      */
     public static function appOrigin(): string
     {
-        $forwarded = strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''));
-        $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $forwarded === 'https';
         $host = trim((string) ($_SERVER['HTTP_HOST'] ?? 'localhost'));
         $base = rtrim(str_replace('\\', '/', dirname((string) ($_SERVER['SCRIPT_NAME'] ?? '/index.php'))), '/');
         if ($base === '/' || $base === '.') {
             $base = '';
         }
 
-        return ($https ? 'https' : 'http') . '://' . $host . $base;
+        return (self::https() ? 'https' : 'http') . '://' . $host . $base;
+    }
+
+    /**
+     * HTTPS langsung dari PHP, atau dari proxy yang ada di TRUSTED_PROXIES.
+     */
+    public static function https(): bool
+    {
+        if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+            return true;
+        }
+
+        $forwarded = strtolower(trim((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')));
+
+        if ($forwarded !== 'https') {
+            return false;
+        }
+
+        $remote = trim((string) ($_SERVER['REMOTE_ADDR'] ?? ''));
+        $trusted = getenv('TRUSTED_PROXIES');
+
+        if ($remote === '' || !is_string($trusted) || trim($trusted) === '') {
+            return false;
+        }
+
+        foreach (explode(',', $trusted) as $proxy) {
+            if ($remote === trim($proxy)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** Alamat halaman yang sedang diminta, tanpa query. */

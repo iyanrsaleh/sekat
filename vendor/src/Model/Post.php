@@ -36,6 +36,19 @@ final class Post extends Model
          'required' => true,
          'label' => 'Isi'
          ],
+        'status' => [
+            'type' => 'string',
+            'max' => 20,
+            'required' => false,
+            'default' => 'published',
+            'label' => 'Status',
+            'rules' => ['enum:draft,published'],
+        ],
+        'published_at' => [
+            'type' => 'datetime',
+            'required' => false,
+            'label' => 'Tanggal tayang',
+        ],
         'user_id' => [
          'type' => 'int',
          'unsigned' => true,

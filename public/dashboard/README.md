@@ -1,5 +1,23 @@
 # DashForge Dashboard
 
+## Larangan keras — style
+
+Halaman dashboard memakai komponen dan class yang sudah tersedia di DashForge. Style di luar komponen itu dilarang.
+
+Dilarang:
+
+- Menambah file CSS untuk halaman dashboard.
+- Menulis blok `<style>` di HTML.
+- Menulis atribut `style=""` pada elemen.
+- Membuat class yang tidak ada di `assets/css/dashforge.css`, `assets/css/dashforge.dashboard.css`, CSS fitur yang sudah dimuat, atau CSS library di `assets/lib/`.
+- Mengubah isi file CSS DashForge supaya satu halaman terlihat berbeda.
+
+Yang dipakai:
+
+- Markup dari katalog komponen DashForge, disalin ke dalam `.content-body`.
+- Class utility yang sudah ada (`mg-*`, `pd-*`, `tx-*`, `bg-*`, `wd-*`, `ht-*`, `d-flex`, dan seterusnya).
+- CSS fitur DashForge yang memang sudah dimuat halaman itu.
+
 ## Sidebar
 
 `aside-header` hanya berisi ikon menu (`menu` / `x`). Jangan taruh logo di sana.

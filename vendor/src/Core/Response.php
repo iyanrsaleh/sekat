@@ -79,6 +79,14 @@ final class Response
         return new self('', 204, []);
     }
 
+    public function withHeader(string $name, string $value): self
+    {
+        $headers = $this->headers;
+        $headers[$name] = $value;
+
+        return new self($this->body, $this->statusCode, $headers);
+    }
+
     public function statusCode(): int
     {
         return $this->statusCode;

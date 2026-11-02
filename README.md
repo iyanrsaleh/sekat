@@ -1,6 +1,6 @@
 # Sekat — PHP sebagai Backend API
 
-Status: **1.1.0**. Subrute halaman: folder di `public/` dan `public/dashboard/` menjadi alamat, nama cabang bebas. Sepuluh tahap pembangunan 1.0.0 tetap catatan kerja.
+Status: **1.2.0**. Kulit situs di `public/theme/`. HTTPS tepercaya, seed produksi, kunci API publik, dan filter published ikut dari pelajaran news. Sepuluh tahap pembangunan 1.0.0 tetap catatan kerja.
 
 ---
 
@@ -22,8 +22,8 @@ Aturan yang mengikat:
 2. **Backend tidak mengirim halaman HTML.** Controller mengembalikan JSON.
 3. **Satu pintu masuk.** Semua request lewat `index.php`; tidak ada endpoint tersebar.
 4. **Rute hanya di `vendor/config/routes.php`.** Frontend tidak tahu nama controller.
-5. **Halaman frontend hanya dibaca, bukan dirender.** `PageController` meneruskan file `public/<nama>.html`; tidak ada template engine.
-6. **Nama halaman tidak di-hardcode.** Path URL menjadi berkas di `public/`. Nama cabang bebas: `/<cabang>` membaca `public/<cabang>.html` atau `public/<cabang>/index.html`, dan `/<cabang>/<halaman>` membaca `public/<cabang>/<halaman>.html`. Berkas datar menang bila folder dengan nama yang sama juga ada. `<base>` halaman cabang mengikuti foldernya. Dashboard memakai aturan path yang sama di bawah `public/dashboard/`, dengan `<base>` tetap di `/dashboard/`.
+5. **Halaman frontend hanya dibaca, bukan dirender.** `PageController` mengirim situs publik dari `public/theme/<nama>.html`; tidak ada template engine.
+6. **Nama halaman tidak di-hardcode.** Segmen URL pertama menjadi nama file. Situs publik dibaca dari `public/theme/<halaman>.html`; folder aplikasi di `public/` (mis. `dashboard/`) tetap dibaca dari folder itu sendiri. Aset kulit di `public/theme/assets/`, skrip pengikat API di `public/assets/js/`. Dashboard memakai aturan path yang sama di bawah `public/dashboard/`, dengan `<base>` tetap di `/dashboard/`.
 7. **`vendor/` bukan folder Composer.** Dependensi ada di `deps/`.
 
 ---
@@ -44,9 +44,10 @@ Alur:
 
 ```text
 Browser
-  ├── GET /framework/            → index.php → public/index.html
-  ├── GET /framework/about       → index.php → public/about.html
-  ├── GET /framework/assets/...  → public/assets/... (file statis)
+  ├── GET /framework/            → index.php → public/theme/index.html
+  ├── GET /framework/about       → index.php → public/theme/about.html
+  ├── GET /framework/theme/assets/...  → public/theme/assets/... (file statis kulit)
+  ├── GET /framework/assets/...  → public/assets/... (skrip pengikat API)
   └── GET /framework/api/ping    → vendor/public/index.php → JSON
 ```
 
@@ -57,25 +58,26 @@ Browser
 ```text
 framework/
 ├── public/                     # FRONTEND — tempat kerja user
-│   ├── index.html              # + posts, proxy, about, signin, signup, 404
-│   ├── dashboard/              # area admin (index, data, uploads)
-│   └── assets/
-│       ├── css/style.css
-│       └── js/*.js             # app, posts, proxy, signin, signup, dashboard, uploads
+│   ├── theme/                  # kulit situs publik (index, posts, proxy, about, signin, signup, 404)
+│   │   └── assets/css/style.css
+│   ├── dashboard/              # area admin (index, data, uploads, settings)
+│   └── assets/js/*.js          # skrip pengikat API: app, posts, proxy, signin, signup, dashboard, uploads
 ├── vendor/                     # BACKEND (PHP)
 │   ├── bootstrap.php           # autoload bersama web + CLI
 │   ├── public/index.php        # entry web (header keamanan + router)
 │   ├── src/
-│   │   ├── Core/               # Router, Request, Response, ErrorHandler, Database, Model, Schema, RateLimiter, Cache, Mailer
-│   │   ├── Controller/         # Resource, Page, Dashboard, System, Auth, Me, Csrf, Upload, Proxy, ApiToken
-│   │   ├── Repository/         # Crud, User, Token, EmailToken, ApiToken, Audit
+│   │   ├── Core/               # Router, Request, Response, ErrorHandler, Database, Model, Schema, RateLimiter, Cache, Mailer, HtmlPages, OpenGraph, Json, Partials
+│   │   ├── Controller/         # Resource, Page, Permalink, Dashboard, System, Auth, Me, Csrf, Upload, Proxy, ApiToken
+│   │   ├── Repository/         # Crud, User, Token, EmailToken, ApiToken, Audit, Setting
 │   │   ├── Model/              # Post, User, AuthToken, AuditLog, EmailToken, ApiToken, ApiGrant
-│   │   ├── Middleware/         # Auth, RequireRole, RateLimit, Csrf, ApiToken
+│   │   ├── Middleware/         # Auth, RequireRole, RateLimit, Csrf, ApiToken, OptionalAuth, PublicReadGate
 │   │   └── Proxy/              # ProxyClient
 │   ├── config/                 # app, database, models, routes, proxy, upstreams
 │   ├── database/               # migration SQL
 │   ├── bin/                    # migrate, seed, purge, test
+│   ├── templates/              # halaman tautan slug (permalink)
 │   └── storage/                # logs, uploads (per tahun/bulan), cache, mail
+├── deploy/                     # contoh konfigurasi server (nginx.conf)
 ├── deps/                       # dependensi Composer (bukan kode aplikasi)
 ├── index.php                   # SATU pintu masuk: frontend + API
 ├── composer.json
@@ -84,13 +86,18 @@ framework/
 
 | Path | Fungsi |
 | --- | --- |
-| `public/` | Seluruh file frontend. Ini file aslinya. |
+| `public/` | Seluruh file frontend: kulit situs (`theme/`), aplikasi (`dashboard/`), skrip pengikat API (`assets/js/`). |
+| `public/theme/` | Kulit situs publik. Halaman + aset (`assets/css/style.css`) yang dikirim ke pengunjung. |
+| `public/dashboard/` | Area admin terpisah. Tetap di root `public/`, bukan di dalam `theme/`. |
+| `public/assets/js/` | Skrip pengikat API yang dipakai halaman situs. |
 | `vendor/` | Seluruh kode backend PHP. Tidak pernah dibuka langsung dari browser. |
 | `vendor/src/Core/` | Mesin framework: router, request, response, error handler. |
 | `vendor/config/` | Konfigurasi aplikasi, database (env-only), daftar Model, rute, proxy & upstreams. |
+| `vendor/templates/` | Templat halaman tautan slug (permalink). |
 | `vendor/src/Proxy/` | Klien proxy (meneruskan request ke upstream). |
 | `vendor/storage/` | Log, upload (per tahun/bulan), cache, outbox email. |
 | `index.php` | Satu pintu masuk: `.htaccess` meneruskan semua URL yang bukan file fisik ke sini. |
+| `deploy/` | Contoh konfigurasi server di luar Apache Nxserver (`nginx.conf`). |
 | `deps/` | Dependensi Composer (dipindah dari `vendor/` karena nama folder sudah dipakai kode aplikasi). |
 
 > **Penting**: `vendor/` di project ini berisi kode aplikasi, bukan dependensi Composer. Dependensi ada di `deps/` (diatur `config.vendor-dir`).
@@ -140,7 +147,7 @@ RewriteRule ^ - [L]
 RewriteRule ^ index.php [L,QSA]
 ```
 
-Frontend cukup memakai path relatif `assets/css/style.css`, `assets/js/app.js`, dan `fetch('api/ping')`. Berkas CSS itu contoh, bukan aturan; proyek menggantinya. Saat halaman dikirim, `PageController` menyisipkan `<base href="/framework/">` sesuai lokasi project, sehingga path relatif tetap benar walau URL-nya bertingkat (`/about/a/b`).
+Frontend cukup memakai path relatif `theme/assets/css/style.css`, `assets/js/app.js`, dan `fetch('api/ping')`. Berkas CSS itu contoh, bukan aturan; proyek menggantinya. Saat halaman dikirim, `PageController` menyisipkan `<base href="/framework/">` sesuai lokasi project, sehingga path relatif tetap benar walau URL-nya bertingkat (`/about/a/b`).
 
 | Kebutuhan | URL |
 | --- | --- |
@@ -193,23 +200,23 @@ return static function (Router $router): void {
 
 ### Nama halaman tidak di-hardcode
 
-`PageController::show()` mengambil segmen pertama sebagai nama halaman, membersihkannya, lalu mencari `public/<halaman>.html`. Tidak ada daftar nama file di kode.
+`PageController::show()` mengambil segmen pertama sebagai nama halaman, membersihkannya, lalu mencari `public/theme/<halaman>.html`. Folder aplikasi di `public/` (mis. `dashboard/`) tetap disajikan apa adanya. Tidak ada daftar nama file di kode.
 
 ```php
 $page = (string) ($params['page'] ?? 'index');
 $page = preg_replace('/[^a-z0-9_-]/i', '', $page);
-$path = dirname(__DIR__, 3) . '/public/' . $page . '.html';
+$path = dirname(__DIR__, 3) . '/public/theme/' . $page . '.html';
 ```
 
-Menambah halaman cukup menaruh file di `public/`; rute tidak perlu diubah.
+Menambah halaman cukup menaruh file di `public/theme/`; rute tidak perlu diubah.
 
 | File | URL |
 | --- | --- |
-| `public/index.html` | `/framework/` |
-| `public/about.html` | `/framework/index.php/about` |
-| `public/contact.html` | `/framework/contact` |
-| `public/about.html` + URL `/about/a/b` | tetap `public/about.html`; `a`, `b` hanya segmen, bukan file |
-| file tidak ada, mis. `/framework/asas` | HTTP 404 dengan isi `public/404.html` |
+| `public/theme/index.html` | `/framework/` |
+| `public/theme/about.html` | `/framework/index.php/about` |
+| `public/theme/contact.html` | `/framework/contact` |
+| `public/theme/about.html` + URL `/about/a/b` | tetap `public/theme/about.html`; `a`, `b` hanya segmen, bukan file |
+| file tidak ada, mis. `/framework/asas` | HTTP 404 dengan isi `public/theme/404.html` |
 
 Pencarian file hanya dilakukan sekali, memakai segmen pertama. Segmen berikutnya tidak pernah dipakai untuk mencari file.
 
@@ -232,9 +239,9 @@ Halaman bisa memakai bagian bersama (header/footer) lewat atribut `partial` — 
 <header partial="./header.html"></header>
 ```
 
-- Path relatif terhadap folder halaman (`public/` atau `public/dashboard/`).
+- Path relatif terhadap folder halaman (`public/theme/` atau `public/dashboard/`).
 - Didukung bertingkat (maks 5 level) dan dicegah keluar dari folder web (`..` ditolak).
-- Contoh: `public/header.html`, `public/footer.html`, halaman demo `/partial-demo`.
+- Contoh: `public/theme/header.html`, `public/theme/footer.html`, halaman demo `/partial-demo`.
 
 > **Jembatan**: hanya `index.php` di root. `.htaccess` meneruskan URL yang bukan file fisik ke `index.php`, sehingga URL bersih (`/framework/about`, `/framework/api/posts`) berjalan.
 
@@ -334,7 +341,7 @@ Validasi: `title` wajib, maksimal 200 karakter; `body` wajib. Pelanggaran → `4
 | Kode | HTTP | Kapan |
 | --- | --- | --- |
 | `NOT_FOUND` | 404 | endpoint API tidak dikenal |
-| `PAGE_NOT_FOUND` | 404 | halaman frontend tidak ada (fallback `public/404.html`) |
+| `PAGE_NOT_FOUND` | 404 | halaman frontend tidak ada (fallback `public/theme/404.html`) |
 | `POST_NOT_FOUND` | 404 | id post tidak ada |
 | `UNAUTHORIZED` | 401 | token tidak ada / tidak valid / kedaluwarsa |
 | `INVALID_CREDENTIALS` | 401 | email atau password salah |
@@ -912,118 +919,7 @@ $data = $request->json();   // array, atau HttpException 400 bila JSON rusak
 
 ---
 
-## 8. Rencana kerja
-
-### Tahap 1 — Kerangka minimal ✅
-- [x] Router (GET/POST/PUT/PATCH/DELETE) + parameter `{id}`
-- [x] `Request`, `Response` JSON, `HttpException`, `ErrorHandler`
-- [x] Log error ke `vendor/storage/logs/app-YYYY-MM-DD.log`
-- [x] Entry tunggal `index.php` (frontend + API via PATH_INFO)
-- [x] `GET /index.php/api/ping`
-
-### Tahap 2 — Storage ✅
-- [x] `vendor/config/database.php` → MySQL `127.0.0.1:3310`, database `framework`
-- [x] `App\Core\Database` (PDO, prepared statement, fetch assoc)
-- [x] `Model` metadata + `Schema` + `CrudRepository` generik (model-driven)
-- [x] Migration `posts` via `php vendor/bin/migrate.php`
-- [x] Seed contoh via `php vendor/bin/seed.php`
-- [x] Endpoint baca: `GET /api/posts`, `GET /api/posts/{id}`
-
-### Tahap 3 — CRUD ✅
-- [x] `ResourceController` generik: index, show, store, update, destroy untuk semua Model
-- [x] Validasi otomatis dari metadata Model (`VALIDATION_ERROR`, 422)
-- [x] Uji semua endpoint: 201, 200, 204, 404, 422
-
-### Tahap 4 — Auth ✅
-- [x] Tabel `users` + `auth_tokens` (Model `$exposed = false`)
-- [x] `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/me`
-- [x] `AuthMiddleware` + dukungan middleware di `Router`
-- [x] Password `password_hash()`, token acak + hash SHA-256, masa 7 hari
-
-### Tahap 5 — Frontend
-- [x] Contoh CRUD: `public/posts.html` + `assets/js/posts.js` (buka `/framework/posts`)
-- [x] Contoh sign in: `public/signin.html` + `assets/js/signin.js` (token di `localStorage`, logout mencabut token)
-- [x] Contoh sign up: `public/signup.html` + `assets/js/signup.js` (`POST api/auth/register`, token langsung diberikan)
-- [x] Daftar, tambah, ubah, hapus lewat `fetch('api/posts')`
-- [ ] Desain final milik user
-
-### Tahap 6 — Pengerasan ✅
-- [x] Header keamanan: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, CSP
-- [x] Rate limit login/register: 10 request / 60 detik per IP+path (`429 TOO_MANY_REQUESTS`)
-- [x] `vendor/`, `deps/`, berkas sensitif, dan dotfiles ditolak akses web (403)
-- [x] `php vendor/bin/purge.php` membersihkan token, log, dan cache lama
-- [x] `debug` otomatis `false` saat `APP_ENV=production`
-- [x] Role `admin`/`user` + `RequireRole`; tulis posts hanya untuk admin
-- [x] Pagination (`page`, `per_page`), sort, order, filter per field
-- [x] Validasi `unique` → `422 DUPLICATE_VALUE`, termasuk penanganan error constraint DB
-- [x] `Schema::sync()` menambah kolom/index baru tanpa menghapus data
-- [x] Bootstrap bersama `vendor/bootstrap.php` (web + CLI)
-- [x] `php vendor/bin/test.php` — 26 uji integrasi
-
-### Tahap 7 — Lanjutan ✅
-- [x] Relasi `belongsTo`/`hasMany` via `?with=`
-- [x] Audit log `audit_logs` (auth + CRUD) + `GET /api/audit-logs` (admin)
-- [x] Helper transaksi `Database::transaction()`
-- [x] Konfigurasi lewat env (`APP_ENV`, `DB_*`)
-- [x] Dev server `vendor/bin/router.php` + CI GitHub Actions
-
-### Tahap 8 — Data & file ✅
-- [x] Soft delete (`deleted_at`) + `restore` + `?force=true`
-- [x] Foreign key otomatis untuk relasi `belongsTo`
-- [x] Error FK/constraint dipetakan ke 422/409
-- [x] Upload gambar (PNG/JPEG/WEBP ≤2 MB) + daftar + hapus
-- [x] `php vendor/bin/test.php` — 26 uji
-
-### Tahap 9 — Auth & performa ✅
-- [x] Access token (7 hari) + refresh token (90 hari) dengan rotasi
-- [x] `POST /api/auth/refresh`; refresh lama langsung tidak berlaku
-- [x] Caching daftar resource (`App\Core\Cache`, TTL 15 detik) + invalidasi otomatis saat tulis
-- [x] Audit CRUD resource (posts.create/update/delete/restore)
-- [x] Area admin `/dashboard` terpisah dari halaman publik (`DashboardController` → `public/dashboard/`)
-- [x] Validator terpusat (`App\Core\Validator`): email, min/max, numeric, between, regex, enum, date, confirmed — dipakai via field `rules`
-- [x] Exporter CSV/XLSX (`GET /api/{resource}/export`)
-- [x] Pengaturan dasar (tabel `settings`): `GET/PUT /api/settings`, halaman `/dashboard/settings`, judul halaman otomatis dari `site_title`
-- [x] Profil: ganti foto (`POST /api/me/avatar`) + ubah password (`PUT /api/me/password`) + edit nama/email (`PUT /api/me`) + logout semua perangkat
-- [x] Partials HTML: elemen `partial="./file.html"` di-inject server saat halaman dikirim
-- [x] Verifikasi email + reset password (token + Mailer outbox)
-- [x] CSRF double-submit (`GET /api/csrf`, middleware Bearer-exempt)
-- [x] `GET /api/stats` + area admin `/dashboard` (folder `public/dashboard/`)
-- [x] Halaman contoh upload (`/dashboard/uploads`)
-- [x] Token API klien: nama + `days`/`months`/`years` + grant (meniru middleware)
-- [x] Proxy: `/api/{alias}/{path}` diteruskan ke URL tujuan (meniru modul proxy)
-
----
-
-## 9. Keputusan yang sudah disepakati
-
-| Topik | Keputusan |
-| --- | --- |
-| Folder backend | `vendor/` (kode aplikasi), dependensi Composer di `deps/` |
-| Storage | MySQL/MariaDB via PDO — `127.0.0.1:3310`, database `framework`, user `root` |
-| Auth | Token Bearer, header `Authorization: Bearer <token>`, token 7 hari disimpan sebagai hash |
-| Frontend & API | Satu domain, tanpa CORS |
-| Composer | PSR-4 `App\` → `vendor/src/` |
-| Entry | Satu file `index.php`, memakai PATH_INFO |
-
-### Tahap 10 — Alamat, proxy, dan skrip halaman ✅
-- [x] `Request::appOrigin()` menyusun akar situs dari host dan letak `index.php`
-- [x] Halaman publik dan dashboard mengganti `__APP_ORIGIN__` dengan akar itu
-- [x] Tautan reset password memakai akar yang sama
-- [x] Tautan dashboard tetap relatif terhadap `<base>`, tidak diawali `/`
-- [x] Menu awal: Dashboard, Settings, situs publik. Halaman Data dan Upload ada di kelompok Contoh
-- [x] `ProxyClient` menyambung IPv4 bila curl tidak ada, batas waktu bisa diatur, `postJson()` mengirim header pemanggil
-- [x] Rute proxy publik tetap membuang `Authorization`
-- [x] `spa.js` mengambil nama modul dari nama berkas. Skrip halaman mendaftarkan `window.nxPages` dan memanggilnya di baris terakhir
-- [x] Catatan `Schema::sync`: kolom baru ditambah, tipe kolom lama tidak diubah; model tidak menulis `created_at`
-
-Yang perlu diputuskan selanjutnya:
-
-1. Uji end-to-end SMTP dengan kredensial nyata.
-2. Aktifkan mode cookie refresh (`AUTH_COOKIE_REFRESH=1`) bila ingin refresh token jauh dari JS.
-
----
-
-## 10. Yang sengaja tidak dibuat
+## 8. Yang sengaja tidak dibuat
 
 - Template engine (Twig/Blade) dan folder `views/`.
 - Helper `view()`, `layout()`, `partial()`.

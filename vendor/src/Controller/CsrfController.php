@@ -17,7 +17,13 @@ final class CsrfController
         $token = bin2hex(random_bytes(16));
 
         // Tidak httpOnly karena dibaca JavaScript untuk dikirim sebagai header.
-        setcookie('XSRF-TOKEN', $token, 0, '/', '', false, false);
+        setcookie('XSRF-TOKEN', $token, [
+            'expires' => 0,
+            'path' => '/',
+            'secure' => Request::https(),
+            'httponly' => false,
+            'samesite' => 'Lax',
+        ]);
 
         return Response::json(['token' => $token]);
     }

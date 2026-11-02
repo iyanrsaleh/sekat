@@ -55,6 +55,7 @@ final class ResourceController
             (string) $request->query('sort', 'id'),
             (string) $request->query('order', 'desc'),
             $this->with($request),
+            $this->publishedOnly($request),
         ];
 
         $namespace = 'crud/' . $this->model::resource();
@@ -72,7 +73,16 @@ final class ResourceController
      */
     public function show(array $params, Request $request): Response
     {
-        return $this->found((int) ($params['id'] ?? 0), $this->with($request));
+        $id = (int) ($params['id'] ?? 0);
+        $with = $this->with($request);
+
+        if ($this->publishedOnly($request)) {
+            $row = $this->repository->findPublished($id, $with);
+
+            return $row === null ? $this->missing() : Response::json($row);
+        }
+
+        return $this->found($id, $with);
     }
 
     /**
@@ -190,6 +200,21 @@ final class ResourceController
             is_array($user) ? (int) ($user['id'] ?? 0) : null,
             [$id === null ? [] : ['id' => (int) $id]],
         );
+    }
+
+    /**
+     * Orang luar hanya melihat baris published bila model punya field status.
+     * Admin tetap melihat draf.
+     */
+    private function publishedOnly(Request $request): bool
+    {
+        if (!in_array('status', $this->model::fieldNames(), true)) {
+            return false;
+        }
+
+        $user = $request->attribute('user');
+
+        return !(is_array($user) && ($user['role'] ?? '') === 'admin');
     }
 
     /**

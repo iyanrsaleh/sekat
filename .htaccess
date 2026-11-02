@@ -33,6 +33,9 @@ Options -Indexes
     # Asset frontend: /assets/... -> public/assets/...
     RewriteRule ^assets/(.*)$ public/assets/$1 [L]
 
+    # Aset tema: /theme/assets/... -> public/theme/assets/...
+    RewriteRule ^theme/assets/(.*)$ public/theme/assets/$1 [L]
+
     # Berkas statis cabang: /<cabang>/app.css -> public/<cabang>/app.css. HTML tetap lewat index.php.
     # (?!public/) mencegah rewrite berulang yang berakhir 500.
     RewriteCond %{REQUEST_FILENAME} !-f

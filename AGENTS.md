@@ -1,6 +1,6 @@
 # Aturan kerja agen — Sekat
 
-Berlaku untuk setiap perubahan di folder ini. Sekat 1.1.0 adalah kerangka PHP 8.1: backend API JSON di `vendor/`, tampilan di `public/`. Rincian ada di `README.md` dan `README.md` folder yang disentuh. Baca README folder itu sebelum mengubah isinya.
+Berlaku untuk setiap perubahan di folder ini. Sekat 1.2.0 adalah kerangka PHP 8.1: backend API JSON di `vendor/`, tampilan di `public/`. Rincian ada di `README.md` dan `README.md` folder yang disentuh. Baca README folder itu sebelum mengubah isinya.
 
 ## Pembagian kerja
 
@@ -18,7 +18,7 @@ Aturan yang mengikat:
 2. Controller tidak mengirim HTML. Kembalikan `Response` JSON. Jangan `echo`, jangan `exit`.
 3. Semua request lewat `index.php`. Jangan buat endpoint tersebar.
 4. Rute hanya di `vendor/config/routes.php`. Frontend tidak menyebut nama controller.
-5. Halaman hanya dibaca. `PageController` mengirim `public/<nama>.html`. Tidak ada template engine, `views/`, atau server-side rendering.
+5. Halaman hanya dibaca. Situs publik dikirim dari `public/theme/<nama>.html`. Folder aplikasi di `public/` (`dashboard/`) tetap di tempatnya. Tidak ada template engine, `views/`, atau server-side rendering.
 6. Nama halaman tidak di-hardcode. Segmen URL pertama menjadi nama file di `public/`.
 7. `vendor/` adalah kode aplikasi. Jangan memasang paket Composer ke folder itu.
 
@@ -46,9 +46,9 @@ Auth bukan tugas controller. Pasang middleware pada rute: `AuthMiddleware`, lalu
 
 Tampilan:
 
-- Halaman publik di `public/<nama>.html` atau folder `public/<cabang>/`. Nama cabang bebas. `/<cabang>` membaca `public/<cabang>.html`, atau `public/<cabang>/index.html` bila berkas datar itu tidak ada. `/<cabang>/<halaman>` membaca `public/<cabang>/<halaman>.html` atau `public/<cabang>/<halaman>/index.html`. `<base>` cabang mengikuti folder berkas. Aset statis cabang (css, js, gambar) dilayani dari folder yang sama.
-- Gaya situs publik bebas. `public/assets/css/style.css` hanya contoh minimal. Jangan menambah aturan gaya atau mesin tema di `vendor/`.
-- Dashboard di `public/dashboard/`. Subrute sama: `/dashboard/cabang` dan `/dashboard/cabang/halaman`. `<base>` tetap `/dashboard/` supaya shell dan tautan menu (`settings`) tidak bergeser. Path yang diawali `/` mengabaikan `<base>`.
+- Halaman publik di `public/theme/<nama>.html`. Aset kulit di `public/theme/assets/`. Skrip pengikat API tetap di `public/assets/js/`. Path relatif terhadap `<base>` (`theme/assets/css/style.css`, `assets/js/…`, `api/ping`). Folder aplikasi di `public/` (`dashboard/`) tetap di tempatnya.
+- Gaya situs publik bebas. Jangan menambah aturan gaya atau mesin tema di `vendor/`.
+- Dashboard di `public/dashboard/`. Subrute sama: `/dashboard/cabang` dan `/dashboard/cabang/halaman`. `<base>` tetap `/dashboard/`. Path yang diawali `/` mengabaikan `<base>`.
 - Sidebar dashboard: `aside-header` hanya ikon menu. Desktop (lebar 992px ke atas) menyembunyikan `aside-header`, tinggi `aside-body` `calc(100% - 0px)`, lipat sidebar lewat ikon di dalam `aside-loggedin`. Mobile menampilkan ikon menu di kanan (`justify-content: flex-end`) dan tinggi `aside-body` `calc(100% - 59px)`. Aturan ini ada di akhir `assets/css/dashforge.dashboard.css`.
 - Skrip halaman dashboard mendaftarkan `window.nxPages` lalu memanggilnya di baris terakhir. Nama fungsi mengikuti nama berkas.
 - Font di `public/dashboard/assets/fonts/` dipakai CSS. Jangan dihapus.

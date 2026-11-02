@@ -31,10 +31,12 @@ final class PostSearchController
         }
 
         $rows = $this->database->select(
-            'SELECT * FROM posts
-             WHERE title LIKE :title OR body LIKE :body
+            "SELECT * FROM posts
+             WHERE deleted_at IS NULL AND status = 'published'
+               AND (published_at IS NULL OR published_at <= NOW())
+               AND (title LIKE :title OR body LIKE :body)
              ORDER BY id DESC
-             LIMIT 50',
+             LIMIT 50",
             ['title' => '%' . $keyword . '%', 'body' => '%' . $keyword . '%'],
         );
 

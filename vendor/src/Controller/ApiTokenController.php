@@ -8,14 +8,17 @@ use App\Core\HttpException;
 use App\Core\Request;
 use App\Core\Response;
 use App\Repository\ApiTokenRepository;
+use App\Repository\SettingRepository;
 
 /**
  * Pengelola token API (admin): buat dengan masa berlaku, daftar, cabut, grant.
  */
 final class ApiTokenController
 {
-    public function __construct(private readonly ApiTokenRepository $tokens)
-    {
+    public function __construct(
+        private readonly ApiTokenRepository $tokens,
+        private readonly ?SettingRepository $settings = null,
+    ) {
     }
 
     /**
@@ -49,6 +52,48 @@ final class ApiTokenController
         }
 
         return Response::noContent();
+    }
+
+    public function lockShow(): Response
+    {
+        return Response::json(['closed' => $this->closed()]);
+    }
+
+    /**
+     * @param array<string, string> $params
+     */
+    public function lockSave(array $params, Request $request): Response
+    {
+        $input = $request->json();
+
+        if (!is_bool($input['closed'] ?? null)) {
+            throw new HttpException(422, 'VALIDATION_ERROR', 'Nilai closed harus true atau false');
+        }
+
+        if ($this->settings === null) {
+            throw new HttpException(500, 'SETTINGS_MISSING', 'Pengaturan API lock tidak tersedia');
+        }
+
+        $this->settings->savePublicApiLock($input['closed']);
+
+        return Response::json(['closed' => $input['closed']]);
+    }
+
+    private function closed(): bool
+    {
+        if ($this->settings === null) {
+            return false;
+        }
+
+        $closed = $this->settings->publicApiLock();
+
+        if ($closed === null) {
+            $this->settings->savePublicApiLock(false);
+
+            return false;
+        }
+
+        return $closed;
     }
 
     public function grantsIndex(array $params, Request $request): Response

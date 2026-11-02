@@ -140,6 +140,9 @@
       const title = doc.querySelector('title');
       if (title) document.title = title.textContent;
       slot.innerHTML = next.innerHTML;
+      if (window.matchMedia('(max-width: 991.98px)').matches) {
+        document.body.classList.remove('show-aside');
+      }
       const scripts = Array.prototype.slice.call(slot.querySelectorAll('script'));
       for (let i = 0; i < scripts.length; i++) {
         const raw = scripts[i].getAttribute('src');

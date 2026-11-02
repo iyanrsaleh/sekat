@@ -33,18 +33,18 @@ final class PageController
      */
     public function show(array $params, Request $request): Response
     {
-        $found = HtmlPages::locate(self::publicDir(), self::urlPath($params));
+        $found = $this->locate(self::urlPath($params));
 
         if ($found === null) {
             return $this->notFound();
         }
 
-        return Response::html($this->prepare((string) file_get_contents($found['file']), $found['directory']));
+        return Response::html($this->prepare((string) file_get_contents($found['file']), $found['directory'], dirname($found['file'])));
     }
 
     public function has(string $urlPath): bool
     {
-        return HtmlPages::locate(self::publicDir(), $urlPath) !== null;
+        return $this->locate($urlPath) !== null;
     }
 
     public function html(string $html): Response
@@ -59,13 +59,34 @@ final class PageController
 
     private function notFound(): Response
     {
-        $fallback = self::publicDir() . '/404.html';
+        $fallback = self::publicDir() . '/theme/404.html';
+
+        if (!is_file($fallback)) {
+            $fallback = self::publicDir() . '/404.html';
+        }
 
         if (!is_file($fallback)) {
             return Response::error('PAGE_NOT_FOUND', 'Halaman tidak ditemukan', 404);
         }
 
-        return Response::html($this->prepare((string) file_get_contents($fallback)), 404);
+        return Response::html($this->prepare((string) file_get_contents($fallback), '', dirname($fallback)), 404);
+    }
+
+    /**
+     * Kulit situs ada di public/theme. Folder aplikasi di public (dashboard) tetap di tempatnya.
+     *
+     * @return array{file: string, directory: string}|null
+     */
+    private function locate(string $urlPath): ?array
+    {
+        $public = self::publicDir();
+        $first = explode('/', trim($urlPath, '/'))[0] ?? '';
+
+        if ($first !== '' && $first !== 'theme' && is_dir($public . '/' . $first)) {
+            return HtmlPages::locate($public, $urlPath);
+        }
+
+        return HtmlPages::locate($public . '/theme', $urlPath);
     }
 
     /**
@@ -87,9 +108,11 @@ final class PageController
         return $rest === '' ? $page : $page . '/' . $rest;
     }
 
-    private function prepare(string $html, string $directory = ''): string
+    private function prepare(string $html, string $directory = '', ?string $partialDir = null): string
     {
-        $pageDir = self::publicDir() . ($directory === '' ? '' : '/' . $directory);
+        $pageDir = $partialDir !== null && $partialDir !== ''
+            ? str_replace('\\', '/', $partialDir)
+            : self::publicDir() . ($directory === '' ? '' : '/' . $directory);
         $html = $this->applyTitle($this->withBase(
             Partials::render($this->applyGoogle($html), $pageDir, 0, self::publicDir()),
             $directory,

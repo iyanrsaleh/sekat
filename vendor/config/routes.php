@@ -23,6 +23,8 @@ use App\Core\RateLimiter;
 use App\Middleware\ApiTokenMiddleware;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\CsrfMiddleware;
+use App\Middleware\OptionalAuth;
+use App\Middleware\PublicReadGate;
 use App\Middleware\RateLimitMiddleware;
 use App\Middleware\RequireRole;
 use App\Repository\ApiTokenRepository;
@@ -48,9 +50,12 @@ return static function (Router $router): void {
     $authController = new AuthController($users, $tokens, $audit, new EmailTokenRepository($database), $debug, (bool) getenv('AUTH_COOKIE_REFRESH'), $googleClientId, $googleClientSecret);
     $rateLimit = new RateLimitMiddleware(new RateLimiter(dirname(__DIR__, 2) . '/vendor/storage/cache'), 10, 60);
     $adminOnly = new RequireRole('admin');
-    $settingsController = new SettingsController(new SettingRepository($database), $audit);
+    $settingsRepo = new SettingRepository($database);
+    $settingsController = new SettingsController($settingsRepo, $audit);
     $apiTokens = new ApiTokenRepository($database);
-    $apiTokenController = new ApiTokenController($apiTokens);
+    $apiTokenController = new ApiTokenController($apiTokens, $settingsRepo);
+    $optionalAuth = new OptionalAuth($tokens);
+    $publicRead = new PublicReadGate($settingsRepo, $apiTokens);
 
     // API sistem
     $system = new SystemController($database);
@@ -85,6 +90,8 @@ return static function (Router $router): void {
     $router->get('/api/api-tokens', [$apiTokenController, 'index'], [$auth, $adminOnly]);
     $router->post('/api/api-tokens', [$apiTokenController, 'store'], [$csrf, $auth, $adminOnly]);
     $router->delete('/api/api-tokens/{name}', [$apiTokenController, 'destroy'], [$csrf, $auth, $adminOnly]);
+    $router->get('/api/api-lock', [$apiTokenController, 'lockShow'], [$auth, $adminOnly]);
+    $router->put('/api/api-lock', [$apiTokenController, 'lockSave'], [$csrf, $auth, $adminOnly]);
     $router->get('/api/api-grants', [$apiTokenController, 'grantsIndex'], [$auth, $adminOnly]);
     $router->post('/api/api-grants', [$apiTokenController, 'grantStore'], [$csrf, $auth, $adminOnly]);
     $router->delete('/api/api-grants/{name}/{kind}/{resource}', [$apiTokenController, 'grantDestroy'], [$csrf, $auth, $adminOnly]);
@@ -102,7 +109,7 @@ return static function (Router $router): void {
     $router->get('/api/audit-logs', [new ResourceController(AuditLog::class, new CrudRepository($database, AuditLog::class)), 'index'], [$auth, $adminOnly]);
 
     // Query kustom (didahulukan sebelum rute resource)
-    $router->get('/api/posts/search', [new PostSearchController($database), 'index']);
+    $router->get('/api/posts/search', [new PostSearchController($database), 'index'], [$publicRead]);
 
     // Auto CRUD: satu Model = satu resource (hanya Model $exposed)
     /** @var array<int, class-string<\App\Core\Model>> $models */
@@ -115,11 +122,12 @@ return static function (Router $router): void {
 
         $resource = $model::resource();
         $controller = new ResourceController($model, new CrudRepository($database, $model), $audit);
+        $readGate = [$optionalAuth, $publicRead];
 
-        $router->get('/api/' . $resource, [$controller, 'index']);
+        $router->get('/api/' . $resource, [$controller, 'index'], $readGate);
         $router->post('/api/' . $resource, [$controller, 'store'], [$csrf, $auth, $adminOnly]);
         $router->get('/api/' . $resource . '/export', [$controller, 'export'], [$auth, $adminOnly]);
-        $router->get('/api/' . $resource . '/{id}', [$controller, 'show']);
+        $router->get('/api/' . $resource . '/{id}', [$controller, 'show'], $readGate);
         $router->put('/api/' . $resource . '/{id}', [$controller, 'update'], [$csrf, $auth, $adminOnly]);
         $router->patch('/api/' . $resource . '/{id}', [$controller, 'update'], [$csrf, $auth, $adminOnly]);
         $router->delete('/api/' . $resource . '/{id}', [$controller, 'destroy'], [$csrf, $auth, $adminOnly]);

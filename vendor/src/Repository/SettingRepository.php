@@ -79,7 +79,7 @@ final class SettingRepository
                 throw new HttpException(422, 'VALIDATION_ERROR', 'Nilai ' . $key . ' tidak valid');
             }
 
-            $value = trim((string) $value);
+            $value = trim(str_replace(["\r", "\n"], '', (string) $value));
 
             if (mb_strlen($value) > 2000) {
                 throw new HttpException(422, 'VALIDATION_ERROR', 'Nilai ' . $key . ' terlalu panjang');
@@ -99,5 +99,28 @@ final class SettingRepository
         Cache::flush('settings');
 
         return $this->all();
+    }
+
+    public function publicApiLock(): ?bool
+    {
+        $row = $this->database->first(
+            'SELECT `value` FROM settings WHERE `key` = :key',
+            ['key' => 'public_api_lock'],
+        );
+
+        if ($row === null) {
+            return null;
+        }
+
+        return (string) ($row['value'] ?? '') === '1';
+    }
+
+    public function savePublicApiLock(bool $closed): void
+    {
+        $this->database->execute(
+            'INSERT INTO settings (`key`, `value`) VALUES (:key, :value)
+             ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)',
+            ['key' => 'public_api_lock', 'value' => $closed ? '1' : '0'],
+        );
     }
 }
