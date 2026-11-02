@@ -41,8 +41,26 @@ final class Database
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
             \PDO::ATTR_EMULATE_PREPARES => false,
         ]);
+        $this->pdo->exec('SET time_zone = ' . $this->pdo->quote($this->offset()));
 
         return $this->pdo;
+    }
+
+    /**
+     * Jam sesi MySQL mengikuti timezone aplikasi, supaya TIMESTAMP dan date() PHP satu waktu.
+     */
+    private function offset(): string
+    {
+        $timezone = 'Asia/Jakarta';
+        $appFile = dirname(__DIR__, 2) . '/config/app.php';
+        if (is_file($appFile)) {
+            $app = require $appFile;
+            if (is_string($app['timezone'] ?? null) && $app['timezone'] !== '') {
+                $timezone = $app['timezone'];
+            }
+        }
+
+        return (new \DateTimeImmutable('now', new \DateTimeZone($timezone)))->format('P');
     }
 
     /**

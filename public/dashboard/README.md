@@ -1,5 +1,14 @@
 # DashForge Dashboard
 
+## Sidebar
+
+`aside-header` hanya berisi ikon menu (`menu` / `x`). Jangan taruh logo di sana.
+
+- Desktop, lebar 992px ke atas: `aside-header` disembunyikan. Tinggi `.aside-body` adalah `calc(100% - 0px)`. Lipat sidebar memakai ikon `sidebar` di dalam `.aside-loggedin`.
+- Mobile, di bawah 992px: `aside-header` tampil, isi rata kanan (`justify-content: flex-end`) supaya ikon menu terlihat di strip yang menyembul. Tinggi `.aside-body` adalah `calc(100% - 59px)`.
+
+Aturan CSS itu ada di akhir `assets/css/dashforge.dashboard.css`. Naikkan `?v=` pada tautan stylesheet di `header.html` bila aturan ini berubah. Header berada di luar `content-body`, jadi perubahan shell butuh muat ulang penuh.
+
 ## Tautan dan skrip halaman
 
 Tautan di dalam dashboard memakai path relatif (`settings`, `../docs`). Path yang diawali `/` mengabaikan `<base>` dan jatuh ke akar host.

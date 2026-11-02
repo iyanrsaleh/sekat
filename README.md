@@ -1,6 +1,6 @@
 # Sekat — PHP sebagai Backend API
 
-Status: **1.0.0**. Sepuluh tahap pembangunan sudah selesai. Tahap itu catatan kerja; nomor rilisnya 1.0.0.
+Status: **1.1.0**. Subrute halaman: folder di `public/` dan `public/dashboard/` menjadi alamat, nama cabang bebas. Sepuluh tahap pembangunan 1.0.0 tetap catatan kerja.
 
 ---
 
@@ -23,7 +23,7 @@ Aturan yang mengikat:
 3. **Satu pintu masuk.** Semua request lewat `index.php`; tidak ada endpoint tersebar.
 4. **Rute hanya di `vendor/config/routes.php`.** Frontend tidak tahu nama controller.
 5. **Halaman frontend hanya dibaca, bukan dirender.** `PageController` meneruskan file `public/<nama>.html`; tidak ada template engine.
-6. **Nama halaman tidak di-hardcode.** Segmen URL pertama menjadi nama file, dicari di `public/`.
+6. **Nama halaman tidak di-hardcode.** Path URL menjadi berkas di `public/`. Nama cabang bebas: `/<cabang>` membaca `public/<cabang>.html` atau `public/<cabang>/index.html`, dan `/<cabang>/<halaman>` membaca `public/<cabang>/<halaman>.html`. Berkas datar menang bila folder dengan nama yang sama juga ada. `<base>` halaman cabang mengikuti foldernya. Dashboard memakai aturan path yang sama di bawah `public/dashboard/`, dengan `<base>` tetap di `/dashboard/`.
 7. **`vendor/` bukan folder Composer.** Dependensi ada di `deps/`.
 
 ---
@@ -140,7 +140,7 @@ RewriteRule ^ - [L]
 RewriteRule ^ index.php [L,QSA]
 ```
 
-Frontend cukup memakai path relatif `assets/css/style.css`, `assets/js/app.js`, dan `fetch('api/ping')`. Saat halaman dikirim, `PageController` menyisipkan `<base href="/framework/">` sesuai lokasi project, sehingga path relatif tetap benar walau URL-nya bertingkat (`/about/a/b`).
+Frontend cukup memakai path relatif `assets/css/style.css`, `assets/js/app.js`, dan `fetch('api/ping')`. Berkas CSS itu contoh, bukan aturan; proyek menggantinya. Saat halaman dikirim, `PageController` menyisipkan `<base href="/framework/">` sesuai lokasi project, sehingga path relatif tetap benar walau URL-nya bertingkat (`/about/a/b`).
 
 | Kebutuhan | URL |
 | --- | --- |

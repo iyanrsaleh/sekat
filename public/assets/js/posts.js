@@ -42,7 +42,10 @@ function renderItem(post) {
   item.className = 'post-item';
 
   const title = document.createElement('h2');
-  title.textContent = post.title;
+  const link = document.createElement('a');
+  link.href = post.slug ? post.slug : 'posts';
+  link.textContent = post.title;
+  title.append(link);
 
   const body = document.createElement('p');
   body.textContent = post.body;

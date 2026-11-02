@@ -16,9 +16,21 @@ final class Response
     public static function json(mixed $data, int $statusCode = 200): self
     {
         return new self(
-            (string) json_encode(['ok' => true, 'data' => $data], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            Json::encode(['ok' => true, 'data' => $data]),
             $statusCode,
             ['Content-Type' => 'application/json; charset=utf-8'],
+        );
+    }
+
+    /**
+     * Badan JSON protokol, tanpa amplop {ok, data}. Untuk klien yang membaca bentuk standar.
+     */
+    public static function document(mixed $data, int $statusCode = 200): self
+    {
+        return new self(
+            Json::encode($data),
+            $statusCode,
+            ['Content-Type' => 'application/json; charset=utf-8', 'Cache-Control' => 'no-store'],
         );
     }
 
@@ -32,6 +44,11 @@ final class Response
             $statusCode,
             ['Content-Type' => 'application/json; charset=utf-8'],
         );
+    }
+
+    public static function redirect(string $url, int $statusCode = 302): self
+    {
+        return new self('', $statusCode, ['Location' => $url]);
     }
 
     public static function html(string $body, int $statusCode = 200): self

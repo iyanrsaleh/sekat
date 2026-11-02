@@ -33,6 +33,11 @@ Options -Indexes
     # Asset frontend: /assets/... -> public/assets/...
     RewriteRule ^assets/(.*)$ public/assets/$1 [L]
 
+    # Berkas statis cabang: /<cabang>/app.css -> public/<cabang>/app.css. HTML tetap lewat index.php.
+    # (?!public/) mencegah rewrite berulang yang berakhir 500.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(?!public/)(.+\.(?:css|js|mjs|map|png|jpe?g|gif|webp|svg|ico|woff2?|ttf|eot|json|txt|xml|webmanifest|pdf))$ public/$1 [L]
+
     # File/folder yang benar-benar ada dilayani apa adanya
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d

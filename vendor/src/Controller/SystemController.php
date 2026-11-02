@@ -14,7 +14,7 @@ final class SystemController
     {
     }
 
-    public function ping(): Response
+    public function ping(array $params, Request $request): Response
     {
         return Response::json([
             'pong' => true,
@@ -22,7 +22,7 @@ final class SystemController
         ]);
     }
 
-    public function notFound(): Response
+    public function notFound(array $params, Request $request): Response
     {
         return Response::error('NOT_FOUND', 'Endpoint tidak ditemukan', 404);
     }

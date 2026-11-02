@@ -116,7 +116,7 @@ final class CrudRepository
      */
     public function create(array $input): array
     {
-        $data = $this->validated($input);
+        $data = $this->withSlug($this->validated($input), $input, null);
         $columns = array_keys($data);
 
         $sql = sprintf(
@@ -145,7 +145,7 @@ final class CrudRepository
             return null;
         }
 
-        $data = $this->validated($input, $id);
+        $data = $this->withSlug($this->validated($input, $id), $input, $id);
 
         if ($data !== []) {
             $assignments = implode(', ', array_map(
@@ -382,6 +382,131 @@ final class CrudRepository
                 throw new HttpException(422, 'VALIDATION_ERROR', $label . ' ' . $message);
             }
         }
+    }
+
+    /**
+     * Mengisi slug kosong dari judul. Hanya untuk Model yang punya field slug dan title.
+     */
+    public function ensureSlugs(): int
+    {
+        if (!isset($this->model::fields()['slug']) || !in_array('title', $this->model::fieldNames(), true)) {
+            return 0;
+        }
+
+        $rows = $this->database->select(
+            sprintf('SELECT id, title FROM `%s` WHERE slug IS NULL OR slug = \'\'', $this->model::table()),
+        );
+        $filled = 0;
+
+        foreach ($rows as $row) {
+            $slug = $this->uniqueSlug($this->slugify((string) ($row['title'] ?? '')), (int) $row['id']);
+            $this->database->execute(
+                sprintf('UPDATE `%s` SET slug = :slug WHERE id = :id', $this->model::table()),
+                ['slug' => $slug, 'id' => $row['id']],
+            );
+            $filled++;
+        }
+
+        return $filled;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $input
+     * @return array<string, mixed>
+     */
+    private function withSlug(array $data, array $input, ?int $id): array
+    {
+        if (!isset($this->model::fields()['slug'])) {
+            return $data;
+        }
+
+        $incoming = $data['slug'] ?? null;
+
+        if (is_string($incoming) && $incoming !== '') {
+            $data['slug'] = $this->uniqueSlug($this->slugify($incoming), $id);
+
+            return $data;
+        }
+
+        if ($id !== null && !array_key_exists('slug', $input)) {
+            unset($data['slug']);
+
+            return $data;
+        }
+
+        $title = isset($data['title']) ? (string) $data['title'] : '';
+
+        if ($title === '' && $id !== null) {
+            $current = $this->find($id);
+            $title = (string) ($current['title'] ?? '');
+        }
+
+        $data['slug'] = $this->uniqueSlug($this->slugify($title), $id);
+
+        return $data;
+    }
+
+    private function slugify(string $value): string
+    {
+        $value = mb_strtolower(trim($value), 'UTF-8');
+        $value = strtr($value, [
+            'à' => 'a', 'á' => 'a', 'â' => 'a', 'ä' => 'a', 'å' => 'a', 'ā' => 'a',
+            'è' => 'e', 'é' => 'e', 'ê' => 'e', 'ë' => 'e', 'ē' => 'e',
+            'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i', 'ī' => 'i',
+            'ò' => 'o', 'ó' => 'o', 'ô' => 'o', 'ö' => 'o', 'ō' => 'o',
+            'ù' => 'u', 'ú' => 'u', 'û' => 'u', 'ü' => 'u', 'ū' => 'u',
+            'ç' => 'c', 'ñ' => 'n', 'ý' => 'y', 'ÿ' => 'y',
+        ]);
+        $value = preg_replace('/[^a-z0-9]+/u', '-', $value) ?? '';
+        $value = trim($value, '-');
+
+        if ($value === '' || preg_match('/^\d+$/', $value) === 1) {
+            $value = ($value === '' ? 'item' : $value . '-item');
+        }
+
+        return mb_substr($value, 0, 180);
+    }
+
+    private function uniqueSlug(string $base, ?int $id): string
+    {
+        $candidate = $base;
+        $number = 2;
+
+        while ($this->slugTaken($candidate, $id) || $this->slugReserved($candidate)) {
+            $suffix = '-' . $number;
+            $candidate = mb_substr($base, 0, 180 - strlen($suffix)) . $suffix;
+            $number++;
+
+            if ($number > 100) {
+                break;
+            }
+        }
+
+        return $candidate;
+    }
+
+    private function slugTaken(string $slug, ?int $id): bool
+    {
+        $sql = sprintf('SELECT id FROM `%s` WHERE slug = :slug', $this->model::table())
+            . ($id === null ? '' : ' AND id <> :id')
+            . ' LIMIT 1';
+        $params = ['slug' => $slug];
+
+        if ($id !== null) {
+            $params['id'] = $id;
+        }
+
+        return $this->database->first($sql, $params) !== null;
+    }
+
+    private function slugReserved(string $slug): bool
+    {
+        if (in_array($slug, ['api', 'assets', 'dashboard', 'vendor', 'deps'], true)) {
+            return true;
+        }
+
+        return is_file(dirname(__DIR__, 3) . '/public/' . $slug . '.html');
     }
 
     private function assertUnique(string $field, mixed $value, ?int $id, string $label): void

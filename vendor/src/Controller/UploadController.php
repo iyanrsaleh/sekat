@@ -102,7 +102,7 @@ final class UploadController
     /**
      * @param array<string, string> $params
      */
-    public function show(array $params): Response
+    public function show(array $params, Request $request): Response
     {
         $path = $this->resolve($params);
 
@@ -118,7 +118,7 @@ final class UploadController
      *
      * @return array<string, mixed>
      */
-    public function index(): array
+    public function index(array $params, Request $request): array
     {
         $items = [];
 
@@ -145,7 +145,7 @@ final class UploadController
     /**
      * @param array<string, string> $params
      */
-    public function destroy(array $params): Response
+    public function destroy(array $params, Request $request): Response
     {
         $path = $this->resolve($params);
 

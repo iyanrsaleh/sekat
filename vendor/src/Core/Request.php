@@ -197,4 +197,24 @@ final class Request
 
         return ($https ? 'https' : 'http') . '://' . $host . $base;
     }
+
+    /** Alamat halaman yang sedang diminta, tanpa query. */
+    public static function pageUrl(): string
+    {
+        $uri = (string) ($_SERVER['REQUEST_URI'] ?? '/');
+        $path = parse_url($uri, PHP_URL_PATH) ?: '/';
+        $base = rtrim(str_replace('\\', '/', dirname((string) ($_SERVER['SCRIPT_NAME'] ?? '/index.php'))), '/');
+
+        if ($base === '/' || $base === '.') {
+            $base = '';
+        }
+
+        if ($base !== '' && str_starts_with($path, $base)) {
+            $path = substr($path, strlen($base));
+        }
+
+        $path = '/' . trim((string) $path, '/');
+
+        return self::appOrigin() . ($path === '/' ? '/' : $path);
+    }
 }

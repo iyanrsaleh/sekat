@@ -24,6 +24,13 @@ final class Post extends Model
          'label' => 'Judul',
          'rules' => ['min:5']
          ],
+        'slug' => [
+            'type' => 'string',
+            'max' => 200,
+            'required' => false,
+            'unique' => true,
+            'label' => 'Tautan',
+        ],
         'body' => [
          'type' => 'text',
          'required' => true,

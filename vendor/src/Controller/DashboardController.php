@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Core\HtmlPages;
 use App\Core\Partials;
 use App\Core\Request;
 use App\Core\Response;
@@ -36,7 +37,7 @@ final class DashboardController
      */
     public function index(array $params, Request $request): Response
     {
-        return $this->page('index.html');
+        return $this->renderPath('');
     }
 
     /**
@@ -44,26 +45,28 @@ final class DashboardController
      */
     public function show(array $params, Request $request): Response
     {
-        $page = (string) preg_replace('/[^a-z0-9_-]/i', '', (string) ($params['page'] ?? 'index'));
-        $page = $page === '' ? 'index' : $page;
+        $page = trim((string) ($params['page'] ?? ''), '/');
+        $rest = trim((string) ($params['rest'] ?? ''), '/');
+        $path = $page === '' ? $rest : ($rest === '' ? $page : $page . '/' . $rest);
 
-        return $this->page($page . '.html');
+        return $this->renderPath($path);
     }
 
-    private function page(string $file): Response
+    private function renderPath(string $urlPath): Response
     {
-        $path = self::dashboardDir() . '/' . $file;
+        $found = HtmlPages::locate(self::dashboardDir(), $urlPath === '' ? 'index' : $urlPath);
 
-        if (!is_file($path)) {
-            $path = self::publicDir() . '/404.html';
+        if ($found === null) {
+            return Response::html($this->prepare((string) file_get_contents(self::publicDir() . '/404.html')));
         }
 
-        return Response::html($this->prepare((string) file_get_contents($path)));
+        return Response::html($this->prepare((string) file_get_contents($found['file']), $found['directory']));
     }
 
-    private function prepare(string $html): string
+    private function prepare(string $html, string $directory = ''): string
     {
-        $html = $this->applyTitle($this->withBase(Partials::render($html, self::dashboardDir())));
+        $pageDir = self::dashboardDir() . ($directory === '' ? '' : '/' . $directory);
+        $html = $this->applyTitle($this->withBase(Partials::render($html, $pageDir, 0, self::dashboardDir())));
 
         return str_replace('__APP_ORIGIN__', htmlspecialchars(Request::appOrigin(), ENT_QUOTES), $html);
     }

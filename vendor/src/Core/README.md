@@ -8,10 +8,11 @@ Mesin framework. Tidak berisi fitur aplikasi — hanya alat yang dipakai lapisan
 | --- | --- | --- |
 | `Router.php` | `App\Core\Router` | mencocokkan method + path, mengambil parameter, memanggil handler |
 | `Request.php` | `App\Core\Request` | method, path, query, header, bearer token, body JSON, file upload, `appOrigin()` |
-| `Response.php` | `App\Core\Response` | `json()`, `html()`, `file()`, `error()`, `noContent()` + status code |
+| `Response.php` | `App\Core\Response` | `json()` amplop `{ok,data}` untuk `/api/*`; `document()` badan protokol; `html()`, `file()`, `error()`, `raw()`, `noContent()` |
 | `HttpException.php` | `App\Core\HttpException` | error terkontrol (kode + status) yang dikirim sebagai JSON |
 | `ErrorHandler.php` | `App\Core\ErrorHandler` | menangkap exception, menulis log, mengirim JSON error |
-| `Database.php` | `App\Core\Database` | PDO, `select()`, `first()`, `execute()`, `lastInsertId()`, `transaction()` |
+| `Database.php` | `App\Core\Database` | PDO, `select()`, `first()`, `execute()`, `lastInsertId()`, `transaction()`. Sesi MySQL mengikuti timezone `app.php` |
+| `Json.php` | `App\Core\Json` | encode/decode yang mempertahankan objek kosong `{}` |
 | `Model.php` | `App\Core\Model` | basis Model: `$table`, `$fields`, `$hidden`, cast, serialisasi |
 | `Schema.php` | `App\Core\Schema` | membuat tabel + menambah kolom/index baru dari metadata Model |
 | `RateLimiter.php` | `App\Core\RateLimiter` | pembatas request berbasis file (login/register) |
@@ -55,5 +56,5 @@ throw new HttpException(422, 'VALIDATION_ERROR', 'Judul wajib diisi');
 ## Catatan teknis
 
 - `PDO::ATTR_EMULATE_PREPARES = false`: satu nama parameter tidak boleh dipakai dua kali dalam satu query.
-- Router mendukung `{nama}` dan `{nama:regex}`; rute diuji berurutan.
+- Router mendukung `{nama}` dan `{nama:regex}`; rute diuji berurutan. Aksi dipanggil `($params, $request)`.
 - `Model::serialize()` adalah satu-satunya tempat bentuk JSON resource ditentukan.

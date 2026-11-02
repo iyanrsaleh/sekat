@@ -110,7 +110,7 @@ final class Router
     private function invoke(callable|array $handler, array $params, Request $request): Response
     {
         if (is_array($handler) && is_object($handler[0])) {
-            $result = $handler[0]->{$handler[1]}($params, $request);
+            $result = $this->call([$handler[0], $handler[1]], $params, $request);
         } elseif (is_array($handler)) {
             [$class, $method] = $handler;
 
@@ -124,9 +124,9 @@ final class Router
                 throw new HttpException(500, 'ACTION_NOT_FOUND', 'Action tidak ditemukan: ' . $class . '::' . $method);
             }
 
-            $result = $controller->{$method}($params, $request);
+            $result = $this->call([$controller, $method], $params, $request);
         } else {
-            $result = $handler($params, $request);
+            $result = $this->call($handler, $params, $request);
         }
 
         if ($result instanceof Response) {
@@ -138,5 +138,25 @@ final class Router
         }
 
         return Response::json(null);
+    }
+
+    /**
+     * Aksi menerima ($params, $request). Yang mendeklarasikan lebih sedikit tetap dipanggil sesuai tanda tangannya.
+     */
+    private function call(callable $handler, array $params, Request $request): mixed
+    {
+        $count = is_array($handler)
+            ? (new \ReflectionMethod($handler[0], $handler[1]))->getNumberOfParameters()
+            : (new \ReflectionFunction(\Closure::fromCallable($handler)))->getNumberOfParameters();
+
+        $args = [];
+        if ($count >= 1) {
+            $args[] = $params;
+        }
+        if ($count >= 2) {
+            $args[] = $request;
+        }
+
+        return $handler(...$args);
     }
 }

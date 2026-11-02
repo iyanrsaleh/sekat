@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Core\HtmlPages;
+use App\Core\OpenGraph;
 use App\Core\Partials;
 use App\Core\Request;
 use App\Core\Response;
@@ -21,30 +23,38 @@ final class PageController
         return str_replace('\\', '/', __DIR__ . '/../../../public');
     }
 
-    public function home(): Response
+    public function home(array $params, Request $request): Response
     {
-        return $this->show(['page' => 'index']);
+        return $this->show(['page' => 'index'], $request);
     }
 
     /**
      * @param array<string, string> $params
      */
-    public function show(array $params): Response
+    public function show(array $params, Request $request): Response
     {
-        $page = (string) ($params['page'] ?? 'index');
-        $page = (string) preg_replace('/[^a-z0-9_-]/i', '', $page);
+        $found = HtmlPages::locate(self::publicDir(), self::urlPath($params));
 
-        if ($page === '') {
-            return Response::error('PAGE_NOT_FOUND', 'Halaman tidak ditemukan', 404);
-        }
-
-        $path = self::publicDir() . '/' . $page . '.html';
-
-        if (!is_file($path)) {
+        if ($found === null) {
             return $this->notFound();
         }
 
-        return Response::html($this->prepare((string) file_get_contents($path)));
+        return Response::html($this->prepare((string) file_get_contents($found['file']), $found['directory']));
+    }
+
+    public function has(string $urlPath): bool
+    {
+        return HtmlPages::locate(self::publicDir(), $urlPath) !== null;
+    }
+
+    public function html(string $html): Response
+    {
+        return Response::html($this->prepare($html));
+    }
+
+    public function missing(): Response
+    {
+        return $this->notFound();
     }
 
     private function notFound(): Response
@@ -58,11 +68,36 @@ final class PageController
         return Response::html($this->prepare((string) file_get_contents($fallback)), 404);
     }
 
-    private function prepare(string $html): string
+    /**
+     * @param array<string, string> $params
+     */
+    private static function urlPath(array $params): string
     {
-        $html = $this->applyTitle($this->withBase(Partials::render($this->applyGoogle($html), self::publicDir())));
+        $page = trim((string) ($params['page'] ?? ''), '/');
+        $rest = trim((string) ($params['rest'] ?? ''), '/');
 
-        return str_replace('__APP_ORIGIN__', htmlspecialchars(Request::appOrigin(), ENT_QUOTES), $html);
+        if ($page === '' && $rest === '') {
+            return 'index';
+        }
+
+        if ($page === '') {
+            return $rest;
+        }
+
+        return $rest === '' ? $page : $page . '/' . $rest;
+    }
+
+    private function prepare(string $html, string $directory = ''): string
+    {
+        $pageDir = self::publicDir() . ($directory === '' ? '' : '/' . $directory);
+        $html = $this->applyTitle($this->withBase(
+            Partials::render($this->applyGoogle($html), $pageDir, 0, self::publicDir()),
+            $directory,
+        ));
+
+        $html = str_replace('__APP_ORIGIN__', htmlspecialchars(Request::appOrigin(), ENT_QUOTES), $html);
+
+        return OpenGraph::ensure($html);
     }
 
     private function applyGoogle(string $html): string
@@ -100,10 +135,14 @@ final class PageController
         }, $html, 1);
     }
 
-    private function withBase(string $html): string
+    private function withBase(string $html, string $directory = ''): string
     {
         $base = rtrim(str_replace('\\', '/', dirname((string) ($_SERVER['SCRIPT_NAME'] ?? '/index.php'))), '/');
         $base = ($base === '' ? '' : $base) . '/';
+
+        if ($directory !== '') {
+            $base .= trim($directory, '/') . '/';
+        }
 
         if (stripos($html, '<base ') !== false) {
             return $html;

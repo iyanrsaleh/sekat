@@ -18,7 +18,7 @@
 
     <!-- DashForge CSS -->
     <link rel="stylesheet" href="assets/css/dashforge.css">
-    <link rel="stylesheet" href="assets/css/dashforge.dashboard.css">
+    <link rel="stylesheet" href="assets/css/dashforge.dashboard.css?v=1">
 
     <script src="assets/js/session.js?v=2"></script>
     <script src="assets/js/header.js" defer></script>
@@ -34,7 +34,6 @@
         } catch (error) {}
       </script>
       <div class="aside-header">
-        <a href="./" class="aside-logo">admin<span>Panel</span></a>
         <a href="" class="aside-menu-link">
           <i data-feather="menu"></i>
           <i data-feather="x"></i>
@@ -48,7 +47,10 @@
             </a>
             <input type="file" id="avatar-input" accept="image/png,image/jpeg,image/webp" hidden>
             <div class="aside-alert-link">
-              <a href="#" data-logout title="Sign out"><i data-feather="log-out"></i></a>
+              <a href="" class="aside-menu-link">
+                <i data-feather="sidebar"></i>
+                <i data-feather="x"></i>
+              </a>
             </div>
           </div>
           <div class="aside-loggedin-user">

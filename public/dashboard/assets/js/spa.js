@@ -1,5 +1,54 @@
 // Navigasi dashboard: ganti isi .content-body saja. Shell (menu, header) tidak di-reload.
 (function () {
+  const jobs = new Map();
+  let liveGeneration = 0;
+
+  function stopLive() {
+    liveGeneration += 1;
+    jobs.forEach(function (job) {
+      clearTimeout(job.timer);
+    });
+    jobs.clear();
+  }
+
+  window.nxLive = {
+    stop: stopLive,
+    watch: function (options) {
+      const key = String(options.key || 'page');
+      const every = Math.max(2000, Number(options.every) || 5000);
+      const previous = jobs.get(key);
+      if (previous) clearTimeout(previous.timer);
+      const token = liveGeneration;
+      const job = { timer: 0, stamp: '', busy: false };
+
+      async function tick() {
+        if (token !== liveGeneration) return;
+        if (document.hidden) {
+          job.timer = setTimeout(tick, every);
+          return;
+        }
+        if (!job.busy) {
+          job.busy = true;
+          try {
+            const data = await options.pull();
+            if (token === liveGeneration && data != null) {
+              const next = options.stamp ? String(options.stamp(data)) : JSON.stringify(data);
+              if (next !== job.stamp) {
+                job.stamp = next;
+                options.apply(data);
+              }
+            }
+          } catch (error) {}
+          job.busy = false;
+        }
+        if (token === liveGeneration) job.timer = setTimeout(tick, every);
+      }
+
+      jobs.set(key, job);
+      job.timer = setTimeout(tick, every);
+    }
+  };
+
   const slot = document.querySelector('.content-body');
   if (!slot) return;
 
@@ -70,6 +119,7 @@
   }
 
   async function show(url, push) {
+    stopLive();
     const requestId = ++current;
     slot.classList.add('is-loading');
     try {

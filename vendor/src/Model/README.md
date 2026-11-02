@@ -37,6 +37,7 @@ final class Post extends Model
 | `$hidden` | tidak | field yang tidak dikirim ke JSON (mis. `password`) |
 | `$relations` | tidak | relasi `belongsTo` / `hasMany` untuk `?with=` |
 | `$softDelete` | tidak | `true` = DELETE mengisi `deleted_at`, bukan hapus fisik |
+| `slug` pada `$fields` | tidak | bila ada bersama `title`, mesin mengisi tautan dari judul. Alamatnya `/{slug}`, bukan `?id=` |
 
 ## Opsi per field
 

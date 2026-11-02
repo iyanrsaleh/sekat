@@ -20,12 +20,12 @@ final class SettingsController
     ) {
     }
 
-    public function index(): Response
+    public function index(array $params, Request $request): Response
     {
         return Response::json($this->settings->all());
     }
 
-    public function publicIndex(): Response
+    public function publicIndex(array $params, Request $request): Response
     {
         return Response::json($this->settings->publicValues());
     }

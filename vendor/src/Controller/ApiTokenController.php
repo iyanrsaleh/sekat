@@ -34,7 +34,7 @@ final class ApiTokenController
         return Response::json($token, 201);
     }
 
-    public function index(): Response
+    public function index(array $params, Request $request): Response
     {
         return Response::json(['items' => $this->tokens->all()]);
     }
@@ -42,7 +42,7 @@ final class ApiTokenController
     /**
      * @param array<string, string> $params
      */
-    public function destroy(array $params): Response
+    public function destroy(array $params, Request $request): Response
     {
         if (!$this->tokens->revoke((string) ($params['name'] ?? ''))) {
             return Response::error('TOKEN_NOT_FOUND', 'Nama token tidak ada', 404);
@@ -51,7 +51,7 @@ final class ApiTokenController
         return Response::noContent();
     }
 
-    public function grantsIndex(): Response
+    public function grantsIndex(array $params, Request $request): Response
     {
         return Response::json(['items' => $this->tokens->grants()]);
     }
@@ -75,7 +75,7 @@ final class ApiTokenController
     /**
      * @param array<string, string> $params
      */
-    public function grantDestroy(array $params): Response
+    public function grantDestroy(array $params, Request $request): Response
     {
         if (!$this->tokens->revokeGrant(
             (string) ($params['name'] ?? ''),

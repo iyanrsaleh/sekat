@@ -18,7 +18,7 @@ final class Partials
 {
     private const MAX_DEPTH = 5;
 
-    public static function render(string $html, string $baseDir, int $depth = 0): string
+    public static function render(string $html, string $baseDir, int $depth = 0, ?string $fallbackDir = null): string
     {
         if ($depth >= self::MAX_DEPTH) {
             return $html;
@@ -26,14 +26,20 @@ final class Partials
 
         return (string) preg_replace_callback(
             '/<([a-z][a-z0-9-]*)[^>]*\bpartial="([^"]+)"[^>]*>.*?<\/\1>/is',
-            static function (array $matches) use ($baseDir, $depth): string {
+            static function (array $matches) use ($baseDir, $depth, $fallbackDir): string {
+                $from = $baseDir;
                 $content = self::load($baseDir, $matches[2]);
+
+                if ($content === null && $fallbackDir !== null && $fallbackDir !== $baseDir) {
+                    $content = self::load($fallbackDir, $matches[2]);
+                    $from = $fallbackDir;
+                }
 
                 if ($content === null) {
                     return $matches[0];
                 }
 
-                return self::render($content, $baseDir, $depth + 1);
+                return self::render($content, $from, $depth + 1, $fallbackDir);
             },
             $html,
         );

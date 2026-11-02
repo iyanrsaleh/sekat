@@ -41,21 +41,21 @@ final class ProxyController
         }
 
         if (!in_array($method, self::METHODS, true)) {
-            return Response::raw(json_encode(['error' => 'method_not_allowed', 'hint' => 'metode tidak didukung']), 405, $this->jsonHeaders());
+            return Response::document(['error' => 'method_not_allowed', 'hint' => 'metode tidak didukung'], 405);
         }
 
         if (!in_array($alias, $this->aliases, true)) {
-            return Response::raw(json_encode(['error' => 'not_found', 'hint' => 'alias tidak ada']), 404, $this->jsonHeaders());
+            return Response::document(['error' => 'not_found', 'hint' => 'alias tidak ada'], 404);
         }
 
         if (str_contains($path, '..')) {
-            return Response::raw(json_encode(['error' => 'bad_request', 'hint' => 'path tidak sah']), 400, $this->jsonHeaders());
+            return Response::document(['error' => 'bad_request', 'hint' => 'path tidak sah'], 400);
         }
 
         $upstream = $this->upstreams[$alias] ?? null;
 
         if (!is_string($upstream) || $upstream === '' || !filter_var($upstream, FILTER_VALIDATE_URL)) {
-            return Response::raw(json_encode(['error' => 'driver_unavailable', 'hint' => 'tujuan tidak tersedia']), 503, $this->jsonHeaders());
+            return Response::document(['error' => 'driver_unavailable', 'hint' => 'tujuan tidak tersedia'], 503);
         }
 
         $target = rtrim($upstream, '/') . '/' . ltrim($path, '/');
@@ -70,7 +70,7 @@ final class ProxyController
         try {
             $result = $this->client->forward($method, $target, $headers, $request->rawBody());
         } catch (\Throwable) {
-            return Response::raw(json_encode(['error' => 'bad_gateway', 'hint' => 'mesin tujuan tidak menjawab']), 502, $this->jsonHeaders());
+            return Response::document(['error' => 'bad_gateway', 'hint' => 'mesin tujuan tidak menjawab'], 502);
         }
 
         $responseHeaders = ['Content-Type' => $result['contentType'] ?? 'application/octet-stream'];
@@ -102,13 +102,5 @@ final class ProxyController
         }
 
         return $headers;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function jsonHeaders(): array
-    {
-        return ['Content-Type' => 'application/json; charset=utf-8'];
     }
 }

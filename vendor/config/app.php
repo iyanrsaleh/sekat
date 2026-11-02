@@ -7,7 +7,7 @@ $isProduction = $environment === 'production';
 
 return [
     'name' => 'Sekat',
-    'version' => '1.0.0',
+    'version' => '1.1.0',
     'env' => $environment,
     'debug' => !$isProduction,
     'timezone' => 'Asia/Jakarta',

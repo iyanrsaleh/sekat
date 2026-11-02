@@ -11,6 +11,7 @@ use App\Controller\CsrfController;
 use App\Model\AuditLog;
 use App\Controller\MeController;
 use App\Controller\PageController;
+use App\Controller\PermalinkController;
 use App\Controller\PostSearchController;
 use App\Controller\ResourceController;
 use App\Controller\SystemController;
@@ -148,9 +149,9 @@ return static function (Router $router): void {
     $router->get('/dashboard/{page}', [new DashboardController(), 'show']);
     $router->get('/dashboard/{page}/{rest:.*}', [new DashboardController(), 'show']);
 
-    // Frontend dinamis: nama halaman diambil dari segmen URL,
-    // file dicari di public/<halaman>.html
+    // /<cabang> -> public/<cabang>.html atau public/<cabang>/index.html
+    // /<cabang>/<halaman> -> public/<cabang>/<halaman>.html atau .../index.html
     $router->get('/', [PageController::class, 'home']);
-    $router->get('/{page}', [PageController::class, 'show']);
+    $router->get('/{page}', [new PermalinkController($database, $models), 'show']);
     $router->get('/{page}/{rest:.*}', [PageController::class, 'show']);
 };

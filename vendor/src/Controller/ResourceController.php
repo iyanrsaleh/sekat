@@ -34,6 +34,10 @@ final class ResourceController
      */
     public function index(array $params, Request $request): Response
     {
+        if ($this->repository->ensureSlugs() > 0) {
+            Cache::flush('crud/' . $this->model::resource());
+        }
+
         $filters = [];
 
         foreach ($this->model::fieldNames() as $field) {

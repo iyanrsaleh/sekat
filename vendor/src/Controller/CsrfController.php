@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Core\Request;
 use App\Core\Response;
 
 /**
@@ -11,7 +12,7 @@ use App\Core\Response;
  */
 final class CsrfController
 {
-    public function token(): Response
+    public function token(array $params, Request $request): Response
     {
         $token = bin2hex(random_bytes(16));
 
