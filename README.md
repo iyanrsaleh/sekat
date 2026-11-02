@@ -282,6 +282,8 @@ Endpoint yang sudah ada:
 | GET | `/api/uploads/{tahun}/{bulan}/{name}` | ambil file upload (proxy) | 200 / 404 |
 | DELETE | `/api/uploads/{tahun}/{bulan}/{name}` | hapus file **(auth admin)** | 204 / 401 / 403 / 404 |
 
+| Method | Path | Fungsi | Status |
+| --- | --- | --- | --- |
 | POST | `/api/auth/login` | login, balas access + refresh token | 200 / 401 / 422 |
 | POST | `/api/auth/refresh` | rotasi token dengan `refresh_token` | 200 / 401 / 422 |
 | POST | `/api/auth/verify-email` | verifikasi email dengan token | 200 / 400 / 422 |
