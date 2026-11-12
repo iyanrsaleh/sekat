@@ -19,7 +19,7 @@ Folder ini berisi pengendali request. Ada dua jenis:
 | --- | --- | --- |
 | `PageController.php` | `/{halaman}` | mengirim `public/<halaman>.html`, fallback `public/404.html`, menyisipkan `<base>`, mengganti `__APP_ORIGIN__`, menambah tag Open Graph bila belum ada |
 | `PermalinkController.php` | `/{slug}` | bila segmen bukan berkas HTML dan cocok dengan field `slug`, menampilkan `vendor/templates/permalink.html` plus tag Open Graph |
-| `SystemController.php` | `/api/ping`, `/api/stats` | health check + statistik (admin) |
+| `SystemController.php` | `/api/ping`, `/api/health`, `/api/stats` | hidup, health peantau, statistik (admin) |
 | `SystemController.php` | `/api/*` (tidak dikenal) | 404 JSON `NOT_FOUND` |
 | `ResourceController.php` | `/api/{resource}`, `/api/{resource}/export` | CRUD otomatis + ekspor CSV/XLSX |
 | `PostSearchController.php` | `/api/posts/search?q=` | contoh query kustom dengan `LIKE` |

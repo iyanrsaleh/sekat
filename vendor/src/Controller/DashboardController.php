@@ -18,7 +18,7 @@ final class DashboardController
 {
     private static function publicDir(): string
     {
-        $public = getenv('FRAMEWORK_PUBLIC');
+        $public = \App\Core\Env::get('FRAMEWORK_PUBLIC');
 
         if (is_string($public) && $public !== '') {
             return rtrim(str_replace('\\', '/', $public), '/');

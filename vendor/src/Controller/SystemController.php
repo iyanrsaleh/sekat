@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Core\Database;
+use App\Core\Queue;
 use App\Core\Request;
 use App\Core\Response;
 
@@ -20,6 +21,67 @@ final class SystemController
             'pong' => true,
             'time' => date(DATE_ATOM),
         ]);
+    }
+
+    /**
+     * Cek hidup untuk peantau uptime. Tanpa auth. HTTP 503 bila ada yang gagal.
+     *
+     * @param array<string, string> $params
+     */
+    public function health(array $params, Request $request): Response
+    {
+        $root = defined('FRAMEWORK_ROOT') ? (string) FRAMEWORK_ROOT : dirname(__DIR__, 3);
+        $app = require $root . '/vendor/config/app.php';
+        $cacheDir = $root . '/vendor/storage/cache';
+        $queueDir = $root . '/vendor/storage/queue';
+
+        $cacheWritable = self::writableDir($cacheDir);
+        $queueWritable = self::writableDir($queueDir);
+
+        $databaseOk = false;
+        try {
+            $this->database->first('SELECT 1 AS ok');
+            $databaseOk = true;
+        } catch (\Throwable) {
+            $databaseOk = false;
+        }
+
+        $pending = 0;
+        try {
+            $pending = Queue::pendingCount();
+        } catch (\Throwable) {
+            $queueWritable = false;
+        }
+
+        $ok = $databaseOk && $cacheWritable && $queueWritable;
+
+        return Response::json([
+            'ok' => $ok,
+            'version' => (string) ($app['version'] ?? ''),
+            'time' => date(DATE_ATOM),
+            'checks' => [
+                'database' => $databaseOk,
+                'cache_writable' => $cacheWritable,
+                'queue_writable' => $queueWritable,
+                'queue_pending' => $pending,
+            ],
+        ], $ok ? 200 : 503);
+    }
+
+    private static function writableDir(string $directory): bool
+    {
+        if (!is_dir($directory) && !@mkdir($directory, 0775, true) && !is_dir($directory)) {
+            return false;
+        }
+
+        $probe = $directory . '/.health-' . bin2hex(random_bytes(4));
+        $written = @file_put_contents($probe, '1');
+        if ($written === false) {
+            return false;
+        }
+        @unlink($probe);
+
+        return true;
     }
 
     public function notFound(array $params, Request $request): Response

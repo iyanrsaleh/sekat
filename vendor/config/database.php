@@ -3,9 +3,7 @@
 declare(strict_types=1);
 
 $env = static function (string $key, ?string $default = null): ?string {
-    $value = getenv($key);
-
-    return $value === false || $value === '' ? $default : $value;
+    return \App\Core\Env::get($key, $default);
 };
 
 return [

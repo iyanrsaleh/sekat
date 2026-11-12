@@ -35,6 +35,22 @@ if ($scriptName !== '' && str_starts_with($requestPath, $scriptName)) {
 
 $requestPath = '/' . trim($requestPath, '/');
 
+// Arahkan ke installer saat belum terinstal (kecuali asset/API installer itu sendiri)
+$isInstallPath = $requestPath === '/install' || str_starts_with($requestPath, '/install/') || str_starts_with($requestPath, '/api/install');
+if (!$isInstallPath) {
+    $envFile = $root . '/.env';
+    $installed = is_file($envFile);
+    if ($installed) {
+        $content = (string) @file_get_contents($envFile);
+        $installed = preg_match('/^DB_PASS=(.*)$/m', $content, $m) === 1 && trim((string) $m[1]) !== '';
+    }
+    if (!$installed) {
+        $base = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/');
+        header('Location: ' . $base . '/install');
+        exit;
+    }
+}
+
 if ($requestPath === '/signin' || $requestPath === '/signup') {
     // Google menolak tombol masuk bila origin tidak ikut terkirim.
     // same-origin menghapus Referer ke accounts.google.com.

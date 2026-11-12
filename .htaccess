@@ -1,4 +1,4 @@
-Options -Indexes
+Options -Indexes -MultiViews
 
 # ---- Blokir backend, dependensi, dan berkas sensitif (defense-in-depth) ----
 <IfModule mod_rewrite.c>
@@ -32,6 +32,9 @@ Options -Indexes
 
     # Asset frontend: /assets/... -> public/assets/...
     RewriteRule ^assets/(.*)$ public/assets/$1 [L]
+
+    # Asset installer: /install/assets/... -> public/install/assets/...
+    RewriteRule ^install/assets/(.*)$ public/install/assets/$1 [L]
 
     # Aset tema: /theme/assets/... -> public/theme/assets/...
     RewriteRule ^theme/assets/(.*)$ public/theme/assets/$1 [L]

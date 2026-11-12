@@ -16,8 +16,11 @@ use App\Controller\PostSearchController;
 use App\Controller\ResourceController;
 use App\Controller\SystemController;
 use App\Controller\UploadController;
+use App\Controller\InstallController;
 use App\Core\Database;
 use App\Core\Router;
+use App\Install\EnvironmentWriter;
+use App\Install\Installer;
 use App\Proxy\ProxyClient;
 use App\Core\RateLimiter;
 use App\Middleware\ApiTokenMiddleware;
@@ -47,7 +50,7 @@ return static function (Router $router): void {
     $oauth = require __DIR__ . '/oauth.php';
     $googleClientId = (string) ($oauth['google']['client_id'] ?? '');
     $googleClientSecret = (string) ($oauth['google']['client_secret'] ?? '');
-    $authController = new AuthController($users, $tokens, $audit, new EmailTokenRepository($database), $debug, (bool) getenv('AUTH_COOKIE_REFRESH'), $googleClientId, $googleClientSecret);
+    $authController = new AuthController($users, $tokens, $audit, new EmailTokenRepository($database), $debug, (bool) \App\Core\Env::get('AUTH_COOKIE_REFRESH'), $googleClientId, $googleClientSecret);
     $rateLimit = new RateLimitMiddleware(new RateLimiter(dirname(__DIR__, 2) . '/vendor/storage/cache'), 10, 60);
     $adminOnly = new RequireRole('admin');
     $settingsRepo = new SettingRepository($database);
@@ -60,6 +63,7 @@ return static function (Router $router): void {
     // API sistem
     $system = new SystemController($database);
     $router->get('/api/ping', [$system, 'ping']);
+    $router->get('/api/health', [$system, 'health']);
     $router->get('/api/stats', [$system, 'stats'], [$auth, $adminOnly]);
 
     // Auth
@@ -136,8 +140,8 @@ return static function (Router $router): void {
 
     // Proxy: /api/{alias}/{path} diteruskan ke URL tujuan (alias tidak bocorkan host)
     $proxyAliases = (array) ((require __DIR__ . '/proxy.php')['aliases'] ?? []);
-    $envUpstreams = getenv('NX_PROXY_UPSTREAMS');
-    $proxyUpstreams = $envUpstreams !== false && $envUpstreams !== ''
+    $envUpstreams = \App\Core\Env::get('NX_PROXY_UPSTREAMS');
+    $proxyUpstreams = $envUpstreams !== null
         ? (is_array(json_decode($envUpstreams, true)) ? json_decode($envUpstreams, true) : [])
         : require __DIR__ . '/upstreams.php';
     $proxy = new ProxyController($proxyAliases, $proxyUpstreams, new ProxyClient());
@@ -150,7 +154,28 @@ return static function (Router $router): void {
         });
     }
 
+    // Installer (hanya saat belum terinstal, tanpa auth)
+    $installRoot = dirname(__DIR__, 2);
+    $installController = new InstallController(
+        new Installer(new EnvironmentWriter($installRoot), $installRoot),
+        new EnvironmentWriter($installRoot),
+    );
+    $router->get('/api/install/status', [$installController, 'status']);
+    $router->get('/api/install/check', [$installController, 'check']);
+    $router->post('/api/install/config', [$installController, 'config']);
+    $router->post('/api/install/migrate', [$installController, 'migrate']);
+    $router->post('/api/install/seed', [$installController, 'seed']);
+
     $router->any('/api/{path:.*}', [$system, 'notFound']);
+
+    // Installer halaman publik (statis di public/install/)
+    $installPage = new PageController();
+    $router->get('/install', static function (array $params, $request) use ($installPage) {
+        return $installPage->show(['page' => 'install'], $request);
+    });
+    $router->get('/install/{rest:.*}', static function (array $params, $request) use ($installPage) {
+        return $installPage->show(['page' => 'install', 'rest' => (string) ($params['rest'] ?? '')], $request);
+    });
 
     // Dashboard (area admin) — dipisah dari halaman publik
     $router->get('/dashboard', [new DashboardController(), 'index']);

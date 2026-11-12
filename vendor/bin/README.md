@@ -9,6 +9,7 @@ Script baris perintah. Dijalankan manual, bukan dari browser.
 | `migrate.php` | `php vendor/bin/migrate.php` | buat database, jalankan SQL migration, sinkronkan tabel dari Model |
 | `seed.php` | `php vendor/bin/seed.php` | isi 2 post + user demo bila masih kosong |
 | `purge.php` | `php vendor/bin/purge.php` | hapus token kedaluwarsa, log >14 hari, cache rate limit lama |
+| `queue.php` | `php vendor/bin/queue.php` | proses job file di `vendor/storage/queue` (default 10/jalan; argumen angka = batas) |
 | `test.php` | `php vendor/bin/test.php` | 64 uji integrasi HTTP (API, auth, refresh, verifikasi & reset, CSRF, role, relasi, audit, soft delete, upload) |
 | `router.php` | `php -S 127.0.0.1:8123 -t . vendor/bin/router.php` | router untuk dev server / CI (meniru `.htaccess`) |
 
@@ -32,6 +33,15 @@ php vendor/bin/seed.php
 ```
 
 Hanya menambah data bila tabel kosong, sehingga tidak menduplikasi.
+
+## queue.php
+
+```bash
+php vendor/bin/queue.php
+php vendor/bin/queue.php 20
+```
+
+Memproses job di `vendor/storage/queue/pending`. Tipe awal: `mail.send` dengan payload `to`, `subject`, `body`. Cron tiap menit di produksi (lihat `deploy/OPS.md`). Dorong job dari kode: `App\Core\Queue::push('mail.send', [...])`.
 
 ## Menambah perintah baru
 

@@ -212,7 +212,7 @@ final class Request
         }
 
         $remote = trim((string) ($_SERVER['REMOTE_ADDR'] ?? ''));
-        $trusted = getenv('TRUSTED_PROXIES');
+        $trusted = \App\Core\Env::get('TRUSTED_PROXIES');
 
         if ($remote === '' || !is_string($trusted) || trim($trusted) === '') {
             return false;

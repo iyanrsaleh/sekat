@@ -9,36 +9,10 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__);
 
-$envFile = $root . '/.env';
-if (is_file($envFile)) {
-    $lines = file($envFile, FILE_IGNORE_NEW_LINES);
-    if (is_array($lines)) {
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if ($line === '' || str_starts_with($line, '#')) {
-                continue;
-            }
-            $eq = strpos($line, '=');
-            if ($eq === false) {
-                continue;
-            }
-            $key = trim(substr($line, 0, $eq));
-            $value = trim(substr($line, $eq + 1));
-            if ($key === '' || getenv($key) !== false) {
-                continue;
-            }
-            if (strlen($value) >= 2) {
-                $quote = $value[0];
-                if (($quote === '"' || $quote === "'") && str_ends_with($value, $quote)) {
-                    $value = substr($value, 1, -1);
-                }
-            }
-            putenv($key . '=' . $value);
-            $_ENV[$key] = $value;
-            $_SERVER[$key] = $value;
-        }
-    }
-}
+// .env dibaca per request lewat App\Core\Env::get(), tanpa putenv() (lihat Env.php:
+// putenv bocor antar-aplikasi di Apache mod_php thread-safe).
+require_once $root . '/vendor/src/Core/Env.php';
+App\Core\Env::load($root . '/.env');
 
 $autoload = $root . '/deps/autoload.php';
 
@@ -64,5 +38,6 @@ define('FRAMEWORK_ROOT', $root);
 
 App\Core\Cache::setDirectory($root . '/vendor/storage/cache');
 App\Core\Mailer::setDirectory($root . '/vendor/storage/mail');
+App\Core\Queue::setDirectory($root . '/vendor/storage/queue');
 
 return $root;

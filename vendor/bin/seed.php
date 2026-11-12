@@ -33,8 +33,8 @@ if ($posts->all() === []) {
 $users = new App\Repository\UserRepository($database);
 
 if ($users->count() === 0) {
-    $production = getenv('APP_ENV') === 'production';
-    $password = $production ? (string) getenv('SEED_ADMIN_PASSWORD') : 'admin123';
+    $production = \App\Core\Env::get('APP_ENV') === 'production';
+    $password = $production ? (string) \App\Core\Env::get('SEED_ADMIN_PASSWORD') : 'admin123';
 
     if ($production && strlen($password) < 12) {
         fwrite(STDERR, "Produksi menolak sandi admin bawaan. Isi SEED_ADMIN_PASSWORD minimal 12 karakter.\n");

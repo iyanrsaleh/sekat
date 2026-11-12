@@ -12,15 +12,31 @@ Semua konfigurasi aplikasi. Satu file = satu tanggung jawab. Tidak ada logika di
 | `routes.php` | `vendor/public/index.php` | semua rute frontend dan API |
 | `proxy.php`, `upstreams.php` | route proxy | daftar alias proxy + URL tujuan |
 
+## Membaca env: `App\Core\Env::get()`
+
+`vendor/bootstrap.php` memuat `.env` ke `App\Core\Env` (per request). **Jangan pakai `getenv()` / `putenv()`** untuk nilai `.env`.
+
+Alasannya: di Apache mod_php thread-safe (mis. Nxserver) semua aplikasi berjalan dalam satu proses, dan `putenv()` berlaku
+untuk seluruh proses. Versi lama bootstrap memakai `putenv()` dan melewati key yang "sudah ada", sehingga aplikasi A
+yang dipanggil saat request aplikasi B sedang berjalan membaca `DB_NAME`/`DB_PASS` milik B (terbukti 2026-11-09:
+aplikasi payment tersambung ke database toko yang memanggilnya).
+
+```php
+$host = \App\Core\Env::get('DB_HOST', '127.0.0.1');   // null/default bila kosong atau tidak ada
+```
+
+Urutan: key yang ada di `.env` (termasuk yang sengaja dikosongkan) → environment server (panel hosting, `SetEnv`) → default.
+Daftarkan **setiap key yang dipakai** di `.env` / `.env.example`, boleh kosong, agar nilai dari aplikasi lain tidak pernah terbaca.
+
 ## app.php
 
 ```php
-$environment = getenv('APP_ENV') ?: 'local';
+$environment = \App\Core\Env::get('APP_ENV') ?: 'local';
 $isProduction = $environment === 'production';
 
 return [
     'name' => 'Sekat',
-    'version' => '1.2.0',
+    'version' => '1.3.0',
     'env' => $environment,
     'debug' => !$isProduction,   // APP_ENV=production → debug mati otomatis
     'timezone' => 'Asia/Jakarta',

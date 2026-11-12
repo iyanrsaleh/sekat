@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instalasi Sekat</title>
+<link rel="stylesheet" href="assets/css/install.css">
+</head>
+<body>
+<div class="install-container">
+  <div class="install-card">
+    <div class="install-header">
+      <h1>Sekat</h1>
+      <p>Instalasi portal berita — langkah pertama</p>
+    </div>
+
+    <div id="step-status" class="step">
+      <h2>Deteksi Status</h2>
+      <div class="status-box" id="status-content">
+        <div class="loading">Memeriksa instalasi...</div>
+      </div>
+      <div class="actions hidden" id="status-actions">
+        <button class="btn btn-primary" id="btn-to-check" type="button">Lanjutkan ke Pengaturan</button>
+      </div>
+    </div>
+
+    <div id="step-check" class="step hidden">
+      <h2>Persyaratan Server</h2>
+      <div class="check-list" id="check-content">
+        <div class="loading">Memeriksa server...</div>
+      </div>
+      <div class="actions hidden" id="check-actions">
+        <button class="btn btn-primary" id="btn-to-config" type="button">Lanjutkan ke Database</button>
+      </div>
+    </div>
+
+    <div id="step-config" class="step hidden">
+      <h2>Konfigurasi Database</h2>
+      <form id="config-form">
+        <div class="form-group">
+          <label>Host</label>
+          <input type="text" name="host" value="127.0.0.1" required>
+        </div>
+        <div class="form-group">
+          <label>Port</label>
+          <input type="text" name="port" value="3310" required>
+        </div>
+        <div class="form-group">
+          <label>Nama Database</label>
+          <input type="text" name="database" value="framework" required>
+        </div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" name="username" value="root" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" value="mysql" required>
+        </div>
+        <div class="form-msg" id="config-msg"></div>
+        <div class="actions">
+          <button type="button" class="btn btn-outline" id="btn-back-check">Kembali</button>
+          <button type="submit" class="btn btn-primary">Simpan &amp; Lanjutkan</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="step-migrate" class="step hidden">
+      <h2>Migrasi &amp; Seed</h2>
+      <div class="migrate-box" id="migrate-content">
+        <div class="loading">Menjalankan migrasi dan seed database...</div>
+      </div>
+      <div class="actions hidden" id="migrate-actions">
+        <button class="btn btn-primary" id="btn-finish" type="button">Selesai</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/install.js"></script>
+</body>
+</html>

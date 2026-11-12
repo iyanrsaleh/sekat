@@ -3,10 +3,12 @@ vendor/storage/logs/
 vendor/storage/mail/
 vendor/storage/cache/
 vendor/storage/uploads/
+vendor/storage/queue/
 
 # Environment & secrets
 .env
 .env.*
+.env1
 !.env.example
 
 # Composer dependencies

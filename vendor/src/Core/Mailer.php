@@ -45,7 +45,7 @@ final class Mailer
         $file = is_array($file) ? $file : [];
 
         $env = static function (string $name): string {
-            $value = getenv($name);
+            $value = \App\Core\Env::get($name);
 
             return is_string($value) ? $value : '';
         };

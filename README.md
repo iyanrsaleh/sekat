@@ -1,6 +1,6 @@
 # Sekat — PHP sebagai Backend API
 
-Status: **1.2.0**. Kulit situs di `public/theme/`. HTTPS tepercaya, seed produksi, kunci API publik, dan filter published ikut dari pelajaran news. Sepuluh tahap pembangunan 1.0.0 tetap catatan kerja.
+Status: **1.3.0**. Kulit situs di `public/theme/`. Fondasi operasi: `deploy/OPS.md`, cache aset Nginx, antrian file (`vendor/bin/queue.php`), `GET /api/health`. HTTPS tepercaya, seed produksi, kunci API publik, dan filter published ikut dari pelajaran news.
 
 ---
 

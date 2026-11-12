@@ -1,6 +1,6 @@
 # Aturan kerja agen — Sekat
 
-Berlaku untuk setiap perubahan di folder ini. Sekat 1.2.0 adalah kerangka PHP 8.1: backend API JSON di `vendor/`, tampilan di `public/`. Rincian ada di `README.md` dan `README.md` folder yang disentuh. Baca README folder itu sebelum mengubah isinya.
+Berlaku untuk setiap perubahan di folder ini. Sekat 1.3.0 adalah kerangka PHP 8.1: backend API JSON di `vendor/`, tampilan di `public/`. Rincian ada di `README.md` dan `README.md` folder yang disentuh. Baca README folder itu sebelum mengubah isinya.
 
 ## Pembagian kerja
 

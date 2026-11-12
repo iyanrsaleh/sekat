@@ -39,8 +39,15 @@ final class ResourceController
         }
 
         $filters = [];
+        // Jangan anggap param pagination/order sebagai filter field
+        // (model Ad punya field `sort` — ?sort=sort harus ORDER BY, bukan WHERE sort='sort').
+        $reserved = ['page', 'per_page', 'sort', 'order', 'with', 'format'];
 
         foreach ($this->model::fieldNames() as $field) {
+            if (in_array($field, $reserved, true)) {
+                continue;
+            }
+
             $value = $request->query($field);
 
             if ($value !== null && $value !== '') {
